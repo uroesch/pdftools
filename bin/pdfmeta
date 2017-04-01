@@ -1,0 +1,163 @@
+#!/bin/bash
+
+## ----------------------------------------------------------------------------
+## A wrapper script around `pdftk` to manipulate a PDFs meta data
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Author:        Urs Roesch <github@bun.ch>
+## License:       MIT
+## Requires:      bash >= 4.0, pdftk >= 2.0
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Globals
+## ----------------------------------------------------------------------------
+VERSION=0.1.0
+PRODUCER="pdfmeta ${VERSION}"
+SCRIPT=${0##*/}
+REQUIRE_BASH=4
+REQUIRE_PDFTK=2
+FILES=()
+declare -A META
+
+## ----------------------------------------------------------------------------
+## Functions
+## ----------------------------------------------------------------------------
+usage() {
+  local exit_code=$1; shift;
+  cat << USAGE
+  Usage:
+    ${SCRIPT} <options> <pdf> [[<pdf>] ..]
+
+    Options:
+      -h | --help               This message
+      -k | --keywords           Comma seperated list of keywords
+      -s | --subject            Define the PDFs subject
+      -t | --title              Define the PDFs title
+      -c | --creator            Define the PDFs creator program or library
+      -p | --producer           Define the PDFs producing program
+      -C | --creation-date      Set the creation date of the PDF
+      -M | --modification-date  Set the modification date of the PDF
+
+    Examples:
+
+      Modify keywords
+      ${SCRIPT} --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
+
+      Modify creation date
+      ${SCRIPT} --creation-date "2017-01-01 22:30:45" unicorn.pdf 
+
+USAGE
+
+  exit ${exit_status}
+}
+
+## ----------------------------------------------------------------------------
+
+check_compatibility() {
+  if [[ ${BASH_VERSINFO[0]} -lt ${REQUIRE_BASH} ]]; then
+     echo "Bash version ${REQUIRE_BASH} or higher is required!" 1&>2
+     exit 128
+  fi
+  if ! which pdftk &>/dev/null; then
+     echo "Required binary 'pdftk' was not found on this system" 1&>2
+     exit 127
+  else
+     pdftk_major=$(pdftk --version | awk '/^pdftk/ { print int($2) }')
+     if [[ ${pdftk_major} -lt ${REQUIRE_PDFTK} ]]; then
+       echo "Pdftk version ${REQUIRE_PDFTK}  or higher is required!" 1&>2
+       exit 128
+     fi
+  fi
+}
+
+## ----------------------------------------------------------------------------
+
+convert_date() {
+  local datetime=$1; shift
+  date -d "${datetime}" +D:%Y%m%d%H%M%S%z
+}
+
+## ----------------------------------------------------------------------------
+
+parse_opts() {
+  [[ $# -eq 0 ]] && usage 0;
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -a|--author)            shift; META[Author]="$1";;
+      -k|--keywords)          shift; META[Keywords]="$1";;
+      -t|--title)             shift; META[Title]="$1";;
+      -s|--subject)           shift; META[Subject]="$1";;
+      -c|--creator)           shift; META[Creator]="$1";;
+      -p|--producer)          shift; META[Producer]="$1";;
+      -C|--creation-date)     shift; META[CreationDate]="$1";;
+      -M|--modification-date) shift; META[ModDate]="$1";;
+      -h|--help)              usage 0;;
+      *) FILES=( "${FILES[@]}" "$1")
+    esac
+    shift
+  done
+}
+
+## ----------------------------------------------------------------------------
+
+check_input() {
+  if [[ ${#META[@]} -lt 1 ]]; then
+    usage 1;
+  fi
+}
+
+## ----------------------------------------------------------------------------
+
+assemble_meta_data() {
+  for key in "${!META[@]}"; do
+    case ${key} in
+      *Date) META[${key}]="$(convert_date "${META[${key}]}")";;
+    esac
+    echo InfoBegin
+    echo InfoKey: ${key}
+    echo InfoValue: ${META[${key}]}
+  done
+}
+
+## ----------------------------------------------------------------------------
+
+file_is_pdf() {
+  local file="$1"
+
+  if [[ ! -e "${file}" ]]; then
+    echo "File '${file}' does not exist; skipping!"
+    return 1
+  fi
+  if ! file "${file}" | grep -q 'PDF document' 2>/dev/null; then
+    echo "File '${file}' is not a PDF; skipping!"
+    return 1
+  fi
+}
+
+## ----------------------------------------------------------------------------
+
+update_meta() {
+  local file="$1"; shift;
+  local meta="$( assemble_meta_data )"
+  local work_file="${file}-${RANDOM}-$$"
+
+  file_is_pdf "${file}" || return
+
+  pdftk "${file}" update_info_utf8 <( echo "${meta}" ) output "${work_file}"
+  if [[ $? -eq 0 ]]; then
+    mv "${work_file}" "${file}"
+  else
+    echo "There was an issue updating meta information in ${file}" 1>&2
+  fi
+}
+
+## ----------------------------------------------------------------------------
+
+check_compatibility
+parse_opts "$@"
+check_input
+for file in "${FILES[@]}"; do
+  update_meta "${file}"
+done
