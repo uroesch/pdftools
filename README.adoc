@@ -4,8 +4,8 @@
 :firstname: Urs
 :lastname:  Roesch
 :email:     github@bun.ch
-:revnumber: 0.1
-:keywords:  PDF, CLI, Command Line, tools, documents
+:revnumber: 0.2
+:keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript
 
 A collection of PDF command line tools and wrappers for Linux
 
@@ -45,4 +45,44 @@ pdfmeta --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
 .Modify creation date
 ----
 pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf 
+----
+
+[[pdfresize]]
+== pdfresize
+
+A wrapper aroung `ghostscript` to reduce the size of a scanned document
+
+NOTE: pdfresize is very likely not working with PDF documents containing 
+https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
+
+License:: MIT 
+Requires:: bash, ghostscript
+
+[[pdfresize-usage]]
+=== Usage
+
+----
+Usage: pdfresize [pdfsettings] <input> <output>
+
+  <input>      A PDF file preferably of high resolution
+  <output>     Name of the PDF file to save the result to
+  pdfsettings
+    screen   - low-resolution; comparable to "Screen Optimized" in Acrobat Distiller
+    ebook    - medium-resolution; comparable to "eBook" in Acrobat Distiller
+    printer  - comparable to "Print Optimized" in Acrobat Distiller
+    prepress - comparable to "Prepress Optimized" in Acrobat Distiller
+    default  - intended to be useful across a wide variety of uses
+----
+
+[[pdfresize-examples]]
+=== Examples:
+
+.Resize to default resolution 
+----
+pdresize input.pdf output.pdf
+----
+
+.Resize to sreen resolution
+----
+pdfresize screen input.pdf output.pdf
 ----

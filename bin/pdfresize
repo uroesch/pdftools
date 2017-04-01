@@ -1,0 +1,98 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+# A wrapper aroung ghostscript to reduce the size of a scanned document
+#------------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Author:        Urs Roesch <github@bun.ch>
+## License:       MIT
+## Requires:      bash, ghostscript
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Globals
+## ----------------------------------------------------------------------------
+SCRIPT=${0##*/}
+DEPENDENCIES=( gs )
+
+## ----------------------------------------------------------------------------
+## Functions
+## ----------------------------------------------------------------------------
+
+check_dependencies() {
+  for dependency in ${DEPENDENCIES[*]}; do
+    if ! which ${dependency} >/dev/null 2>&1; then
+      echo "Missing dependency '${dependency}'" 1>&2
+      echo "Please install first!" 1>&2
+      exit 64
+    fi
+  done
+}
+
+## ----------------------------------------------------------------------------
+
+usage() {
+  cat <<USAGE
+
+  Usage: ${SCRIPT} [pdfsettings] <input> <output>
+
+    <input>      A PDF file preferably of high resolution
+    <output>     Name of the PDF file to save the result to
+    pdfsettings
+      screen   - low-resolution; comparable to "Screen Optimized" in Acrobat Distiller
+      ebook    - medium-resolution; comparable to "eBook" in Acrobat Distiller
+      printer  - comparable to "Print Optimized" in Acrobat Distiller
+      prepress - comparable to "Prepress Optimized" in Acrobat Distiller
+      default  - intended to be useful across a wide variety of uses
+
+USAGE
+    exit 1
+}
+
+## ----------------------------------------------------------------------------
+
+resample_pdf() {
+  gs \
+    -q \
+    -dNOPAUSE \
+    -dBATCH \
+    -sDEVICE=pdfwrite \
+    -sColorConversionStrategy=/UseDeviceIndependentColor \
+    -dCompatibilityLevel=1.4 \
+    -dPDFSETTINGS=/${SETTINGS} \
+    -sOutputFile="${OUTPUT}" \
+    "${INPUT}" \
+    &>/dev/null
+}
+
+
+## ----------------------------------------------------------------------------
+
+parse_opts() {
+  case $# in
+    3) SETTINGS=$1; shift
+      get_arguments "$1" "$2"
+      ;;
+    2) get_arguments "$1" "$2"
+      ;;
+    *) usage;
+      ;;
+  esac
+}
+
+## ----------------------------------------------------------------------------
+
+get_arguments() {
+  INPUT=$1; shift;
+  OUTPUT=$1; shift;
+  SETTINGS=${SETTINGS:-default}
+}
+
+## ----------------------------------------------------------------------------
+## Main
+## ----------------------------------------------------------------------------
+
+check_dependencies
+parse_opts "$@"
+resample_pdf
