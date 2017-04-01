@@ -4,11 +4,58 @@
 :firstname: Urs
 :lastname:  Roesch
 :email:     github@bun.ch
-:revnumber: 0.3
-:keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript
+:revnumber: 0.4
+:keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, tesseract, OCR
+:toc:       left
 
 A collection of PDF command line tools and wrappers for Linux
 
+
+
+
+[[ocrpdf]]
+== ocrpdf
+
+Runs PDFs through OCR and saves the output as a text searchable PDF
+with the same name.
+
+NOTE: Only works with PDFs comprised of a single JPEG image per page.
+
+License:: MIT
+Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
+
+[[ocrpdf-usage]]
+=== Usage
+
+----
+ocrpdf [options] <file> [<file> [,,]]
+
+Options:
+  -h | --help   This message
+  -l | --lang   Set the OCR language for multiple concatenate with a +
+                E.g eng+deu for English and German
+                default: <all installed languages>
+----
+
+[[ocrpdf-exmples]]
+=== Examples
+
+.Run OCR with all installed languages on a couple of PDFs
+----
+ocrpdf first.pdf second.pdf
+----
+
+.Run OCR with German dictionary on a single PDF
+----
+ocrpdf --lang deu german.pdf
+----
+
+.Run OCR with German, French and English dictionaries on multiple PDFs
+----
+ocrpdf --lang deu+fra+eng  scanned_*.pdf
+----
+
+<<<
 
 [[pdfcat]]
 == pdfcat
@@ -31,20 +78,22 @@ pdfcat <pdf> <pdf> [..]
 
 .Merging two PDFs into a new one
 ----
-pdfcat first.pdf  second.pdf > merged.pdf 
+pdfcat first.pdf  second.pdf > merged.pdf
 ----
 
 .Merging sequentially ordered pdfs into a single document
 ----
-pdfcat myscan*.pdf > merged.pdf 
+pdfcat myscan*.pdf > merged.pdf
 ----
+
+<<<
 
 [[pdfmeta]]
 == pdfmeta
 
 A wrapper script around `pdftk` to manipulate a PDFs meta data
 
-License:: MIT 
+License:: MIT
 Requires:: bash >= 4.0, pdftk >= 2.0
 
 [[pdfmeta-usage]]
@@ -65,7 +114,7 @@ Options:
 ----
 
 [[pdfmeta-examples]]
-=== Examples:
+=== Examples
 
 .Modify keywords
 ----
@@ -74,18 +123,20 @@ pdfmeta --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
 
 .Modify creation date
 ----
-pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf 
+pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
 ----
+
+<<<
 
 [[pdfresize]]
 == pdfresize
 
 A wrapper aroung `ghostscript` to reduce the size of a scanned document
 
-NOTE: pdfresize is very likely not working with PDF documents containing 
+NOTE: pdfresize is very likely not working with PDF documents containing
 https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
 
-License:: MIT 
+License:: MIT
 Requires:: bash, ghostscript
 
 [[pdfresize-usage]]
@@ -105,9 +156,9 @@ Usage: pdfresize [pdfsettings] <input> <output>
 ----
 
 [[pdfresize-examples]]
-=== Examples:
+=== Examples
 
-.Resize to default resolution 
+.Resize to default resolution
 ----
 pdresize input.pdf output.pdf
 ----

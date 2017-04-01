@@ -1,0 +1,187 @@
+#!/bin/bash
+
+## ----------------------------------------------------------------------------
+## A utility to run a scanned PDF through tesseract's OCR engine and make it
+## searchable.
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Author:        Urs Roesch <github@bun.ch>
+## License:       MIT
+## Requires:      bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
+## ----------------------------------------------------------------------------
+
+## -----------------------------------------------------------------------------
+## Settings
+## -----------------------------------------------------------------------------
+trap cleanup EXIT
+set -o nounset
+set -o errexit
+
+## -----------------------------------------------------------------------------
+## GLOBALS
+## -----------------------------------------------------------------------------
+SCRIPT=${0##*/}
+DEPENDENCIES=(
+  pdfcat
+  pdfimages
+  pdftk
+  tesseract
+)
+INCLUDES=(
+  pdfcat
+)
+PDF_FILES=()
+
+## -----------------------------------------------------------------------------
+## FUNCTIONS
+## -----------------------------------------------------------------------------
+
+check_dependencies() {
+  for dependency in ${DEPENDENCIES[*]}; do
+    if ! which ${dependency} >/dev/null 2>&1; then
+      echo "Missing dependency '${dependency}'" 1>&2
+      echo "Please install first!" 1>&2
+      exit 64
+    fi
+  done
+}
+
+## -----------------------------------------------------------------------------
+
+source_includes() {
+  for include in ${INCLUDES[*]}; do
+    local path=$( which ${include} 2>/dev/null )
+    [[ -n ${path} ]] && source ${path}
+  done
+}
+
+## -----------------------------------------------------------------------------
+
+set_ocr_language() {
+  OCR_LANG=$(
+    sed 's/ /+/g' <<< $( echo $( tesseract --list-langs 2>&1 | grep "^...$" ) )
+  )
+}
+
+## -----------------------------------------------------------------------------
+
+run_ocr() {
+  local filename="$1"; shift;
+  tesseract -l ${OCR_LANG} "${filename}" "${filename%%.*}" pdf >/dev/null 2>&1
+  if [[ $? -eq 0 ]]; then
+    rm "${filename}"
+  else
+    echo "An error occured during character recogntion" 1>&2
+    echo "Please chech leaving original image '${filename}' intact" 1>&2
+    exit 128
+  fi
+}
+
+## -----------------------------------------------------------------------------
+
+usage() {
+  local exit_code=$1
+  cat <<USAGE
+
+  Usage:
+    ${SCRIPT} [options] <file> [<file> [,,]]
+
+  Options:
+    -h | --help   This message
+    -l | --lang   Set the OCR language for multiple concatenate with a +
+                  E.g eng+deu for English and German
+                  default: ${OCR_LANG}
+
+  Description:
+    Runs PDFs through OCR and saves the output as a text searchable PDF
+    with the same name.
+
+  Disclaimer:
+    Only works with PDFs comprised of a single JPEG image per page.
+
+USAGE
+  exit ${exit_code}
+}
+
+## -----------------------------------------------------------------------------
+
+check_compatible() {
+  local file="$1"; shift;
+  ## check if all the images are single jpegs
+  pdfimages -list "${file}" | awk \
+    '/^ +[0-9]/{p=$1; c++; $9 == "jpeg" && j++ }
+     END { if (p < c && p == j) {exit 1} }'
+}
+
+## -----------------------------------------------------------------------------
+
+ocr_pdfs() {
+  for file in "${PDF_FILES[@]}"; do
+    if ! check_compatible "${file}"; then
+      echo "${file} is not compatible; skipping!"
+      continue
+    fi
+    workname="$$-${RANDOM}"
+    meta="$( fetch_meta "${file}" )"
+    pdfimages -j "${file}" "${workname}" 2>/dev/null &&
+    for image in ${workname}*; do
+      run_ocr ${image}
+    done
+    post_process_pdf "${file}" "${workname}" "${meta}"
+  done
+}
+
+## -----------------------------------------------------------------------------
+
+post_process_pdf() {
+  local file="$1"; shift;
+  local workname="$1"; shift;
+  local meta="$1"; shift;
+  merge_pdf "${workname}.pdf" ${workname}*
+  pdftk "${workname}.pdf" \
+    update_info_utf8 <( echo "${meta}" ) \
+    output "${file}"
+  rm "${workname}.pdf"
+}
+
+## -----------------------------------------------------------------------------
+
+merge_pdf() {
+  local filename="$1"; shift;
+  local documents=( "$@" ); shift;
+  if [[ ${#documents[@]} -eq 1 ]]; then
+    mv "${documents[0]}" "${filename}" 2>/dev/null
+  else
+    concat_pdf "${documents[@]}" > "${filename}.${EXTENSION}" &&
+      rm "${documents[@]}" 2>/dev/null
+  fi
+}
+
+## -----------------------------------------------------------------------------
+
+parse_opts() {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -l|--lang) shift; OCR_LANG=$1;;
+      -h|--help) usage 0;;
+      *) PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
+    esac
+    shift
+  done
+}
+
+## -----------------------------------------------------------------------------
+
+cleanup() {
+  rm $$-[0-9]*.{jpg,pdf} 2>/dev/null
+}
+
+## -----------------------------------------------------------------------------
+## MAIN
+## -----------------------------------------------------------------------------
+check_dependencies
+source_includes
+set_ocr_language
+parse_opts "$@"
+ocr_pdfs

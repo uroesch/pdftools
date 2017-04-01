@@ -39,12 +39,12 @@ check_compatibility() {
 
 ## ----------------------------------------------------------------------------
 
-usage() {
+pdfcat_usage() {
   local exit_code=$1; shift;
   echo "  Usage:"
   echo "    ${SCRIPT} <pdf> <pdf> [..]"
   echo ""
-  exit ${exit_status}
+  exit ${exit_code}
 }
 
 ## ----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ write_meta() {
 check_compatibility
 
 if [[ $0 == ${BASH_SOURCE} && ${ARGUMENTS} -lt 2 ]]; then
-  usage 1;
+  pdfcat_usage 1;
 fi
 
 concat_pdf "$@"
