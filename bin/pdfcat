@@ -1,0 +1,82 @@
+#!/bin/bash
+
+## ----------------------------------------------------------------------------
+## A quick hack to replace pdfunite as it destroys too much of the original's
+## meta data.
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Author:        Urs Roesch <github@bun.ch>
+## License:       MIT
+## Requires:      bash, pdftk >= 2.0
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Globals
+## ----------------------------------------------------------------------------
+VERSION=0.1
+PRODUCER="pdfcat ${VERSION}"
+SCRIPT=${0##*/}
+ARGUMENTS=$#
+REQUIRE_PDFTK=2
+
+## ----------------------------------------------------------------------------
+## Functions
+## ----------------------------------------------------------------------------
+
+check_compatibility() {
+  if ! which pdftk &>/dev/null; then
+    echo "Required binary 'pdftk' was not found on this system" 1&>2
+    exit 127
+  else
+    pdftk_major=$(pdftk --version | awk '/^pdftk/ { print int($2) }')
+    if [[ ${pdftk_major} -lt ${REQUIRE_PDFTK} ]]; then
+      echo "Pdftk version ${REQUIRE_PDFTK}  or higher is required!" 1&>2
+      exit 128
+    fi
+  fi
+}
+
+## ----------------------------------------------------------------------------
+
+usage() {
+  local exit_code=$1; shift;
+  echo "  Usage:"
+  echo "    ${SCRIPT} <pdf> <pdf> [..]"
+  echo ""
+  exit ${exit_status}
+}
+
+## ----------------------------------------------------------------------------
+
+fetch_meta() {
+  local file="$1"; shift;
+  pdftk "${file}" dump_data_utf8 output - | grep ^Info
+}
+
+## ----------------------------------------------------------------------------
+
+concat_pdf() {
+  [[ $# -eq 0 ]] && return
+  local meta=$( fetch_meta "$1" )
+  pdftk "$@" cat output - | write_meta "${meta}"
+}
+
+## ----------------------------------------------------------------------------
+
+write_meta() {
+  local meta="$1"; shift;
+  pdftk - update_info_utf8 <( echo "${meta}" ) output -
+}
+
+## ----------------------------------------------------------------------------
+## Main
+## ----------------------------------------------------------------------------
+
+check_compatibility
+
+if [[ $0 == ${BASH_SOURCE} && ${ARGUMENTS} -lt 2 ]]; then
+  usage 1;
+fi
+
+concat_pdf "$@"
