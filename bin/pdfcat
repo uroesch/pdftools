@@ -59,7 +59,7 @@ fetch_meta() {
 concat_pdf() {
   [[ $# -eq 0 ]] && return
   local meta=$( fetch_meta "$1" )
-  pdftk "$@" cat output - | write_meta "${meta}"
+  pdftk "$@" cat output - | write_meta "${meta}" 2>/dev/null
 }
 
 ## ----------------------------------------------------------------------------

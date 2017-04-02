@@ -1,0 +1,162 @@
+#!/bin/bash
+
+## ----------------------------------------------------------------------------
+## A script to convert PNG, TIFF or JPEG to PDF files. 
+## ----------------------------------------------------------------------------
+
+## ----------------------------------------------------------------------------
+## Author:        Urs Roesch <github@bun.ch>
+## License:       MIT
+## Requires:      bash, ImageMagick, pdfcat, pdftk
+## ----------------------------------------------------------------------------
+
+## --------------------------------------------------------------------------
+## Settings
+## --------------------------------------------------------------------------
+set -o nounset
+set -o errexit
+
+## --------------------------------------------------------------------------
+## Globals
+## --------------------------------------------------------------------------
+SCRIPT=${0##*/}
+IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
+IMAGE_QUALITY=${IMAGE_QUALITY:-90}
+IMAGE_ROTATE=""
+PDF_PREFIX=""
+OUTPUT=""
+DELETE_IMAGES=false
+IMAGES=()
+DEPENDENCIES=(
+  identify
+  convert
+  pdfcat
+)
+INCLUDES=(
+  pdfcat
+)
+
+## --------------------------------------------------------------------------
+## Functions
+## --------------------------------------------------------------------------
+
+check_dependencies() {
+  for dependency in ${DEPENDENCIES[*]}; do
+    if ! which ${dependency} >/dev/null 2>&1; then
+      echo "Missing dependency '${dependency}'" 1>&2
+      echo "Please install first!" 1>&2
+      exit 64
+    fi
+  done
+}
+
+## -----------------------------------------------------------------------------
+
+source_includes() {
+  for include in ${INCLUDES[*]}; do
+    local path=$( which ${include} 2>/dev/null )
+    [[ -n ${path} ]] && source ${path}
+  done
+}
+
+## --------------------------------------------------------------------------
+
+usage() {
+  local exit_code=$1
+  cat <<USAGE
+
+  Usage:
+    ${SCRIPT} <options> <img-file> [<img-file> ... ]
+
+  Options:
+    -h  | --help           This message
+    -d  | --delete         Delete the images after creating the PDF file.
+    -o  | --output <name>  Write the output to specified file <name>.
+                           Implies -s
+    -r  | --rotate <value> Rotate the image by <value>
+                           Where value can be a positive or negative integer
+			   between 0 and 360.
+
+USAGE
+  exit ${exit_code}
+}
+
+## --------------------------------------------------------------------------
+
+check_image() {
+  local image="$1"
+  ftype=$( identify -format %m ${image} 2>/dev/null )
+  case ${ftype} in
+     PNG|TIF*)
+       IMAGE_COMPRESSION=lzw
+       IMAGE_QUALITY=9
+       return 0
+       ;;
+     JPEG)
+       IMAGE_COMPRESSION=jpeg
+       IMAGE_QUALITY=90
+       return 0
+       ;;
+     PDF|*)
+       return 1
+       ;;
+  esac
+}
+
+## --------------------------------------------------------------------------
+
+parse_opts() {
+  if [ $# -lt 1 ]; then
+     usage 1
+  fi
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -h|--help)         usage 0;;
+      -d|--delete)       DELETE_IMAGES=true;;
+      -r|--rotate)       shift; IMAGE_ROTATE=$1;;
+      -o|--output)       shift; OUTPUT=$1; PDF_PREFIX="$$-${RANDOM}-";;
+      *)                 IMAGES=( "${IMAGES[@]-}" "$1" );;
+    esac
+    shift
+  done
+  IMAGES=( "${IMAGES[@]:1}" )
+}
+
+## --------------------------------------------------------------------------
+
+create_pdf() {
+  local dest="$( [[ -n ${OUTPUT} ]] && echo ${OUTPUT} || echo ${IMAGES[0]} )"
+  local pdfs=()
+  for image in "${IMAGES[@]}"; do
+    check_image "${image}" || continue
+    pdf="${PDF_PREFIX}${image%.*}.pdf"
+    convert "${image}" \
+      ${IMAGE_ROTATE:+-rotate ${IMAGE_ROTATE}} \
+      -compress ${IMAGE_COMPRESSION} \
+      -quality ${IMAGE_QUALITY} \
+      "${pdf}"
+    pdfs=( "${pdfs[@]-}" "${pdf}" )
+  done
+  [[ -z ${OUTPUT} ]] && return 0
+  concat_pdf "${pdfs[@]:1}" > "$$-${dest}"
+  rm "${pdfs[@]:1}" 2>/dev/null
+  mv "$$-${dest}" "${dest%.*}.pdf"
+}
+
+## --------------------------------------------------------------------------
+
+delete_images() {
+  ## delete the original images
+  if [ ${DELETE_IMAGES} = true ]; then
+    rm "${IMAGES[@]}"
+  fi
+}
+
+## --------------------------------------------------------------------------
+## Main
+## --------------------------------------------------------------------------
+check_dependencies
+source_includes
+parse_opts "$@"
+create_pdf
+delete_images

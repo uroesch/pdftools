@@ -4,14 +4,61 @@
 :firstname: Urs
 :lastname:  Roesch
 :email:     github@bun.ch
-:revnumber: 0.4
+:revnumber: 0.5
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, tesseract, OCR
 :toc:       left
 
 A collection of PDF command line tools and wrappers for Linux
 
 
+[[img2pdf]]
+== img2pdf
 
+A script to convert PNGs, TIFFs or JPEGs to PDF files.
+
+License:: MIT
+Requires:: bash, pdfcat, ImageMagick, pdftk
+
+[[ocrpdf-usage]]
+=== Usage
+
+----
+img2pdf <options> <img-file> [<img-file> ... ]
+
+Options:
+  -h  | --help           This message
+  -d  | --delete         Delete the images after creating the PDF file.
+  -o  | --output <name>  Write the output to specified file <name>.
+                         Implies -s
+  -r  | --rotate <value> Rotate the image by <value>
+                         Where value can be a positive or negative integer
+                         between 0 and 360.
+----
+
+[[ocrpdf-examples]]
+=== Examples
+
+.Create single page pdfs from images
+----
+img2pdf first.png second.jpg
+----
+
+.Create single page pdfs from images and then delete the original images.
+----
+img2pdf --delete first.png second.jpg
+----
+
+.Rotate the image 180 degress prior to creating the pdf
+----
+img2pdf --rotate 180 myimage.png
+----
+
+.Rotate the images by 180 degress and concatenate everyting into file `output.pdf`
+----
+img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
+----
+
+<<<
 
 [[ocrpdf]]
 == ocrpdf
