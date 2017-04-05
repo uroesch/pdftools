@@ -68,12 +68,19 @@ img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 Runs PDFs through OCR and saves the output as a text searchable PDF
 with the same name.
 
-NOTE: Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
-image per page. LZW compressed images are being converted to ZIP compressed
-one during the OCR process.
+NOTE: Only works with quality degradation for PDFs comprised of a single
+      JPEG, LZW or deflated image per page.
+      LZW compressed images will be converted to deflated ones during
+      the OCR process but there is no loss of fidelity.
+      Composite images with multiple layers as JBIG2, CCITT or SMASKS
+      are rendered as a flat image before running through OCR. The
+      resulting PDFs are suffixed with '-ocrpdf.pdf' preserving the
+      original file.
+
 
 License:: MIT
-Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
+Requires:: bash, pdfcat, pdftk, tesseract,
+  pdfimages (poppler-utils), pdftocairo (poppler-utils)
 
 [[ocrpdf-usage]]
 === Usage
@@ -83,12 +90,15 @@ Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
     ocrpdf [options] <file> [<file> [,,]]
 
   Options:
-    -h | --help         This message
-    -V | --version      Print version information and exit
-    -l | --lang <lang>  Set the OCR languages to use.
-                        For multiple languages concatenate with a '+'
-                        E.g eng+deu for English and German
-                        Default: deu+eng+fra+ita+jpn+osd
+    -R | --render <img>  Render composite images as either png or jpeg before
+                         running through OCR.
+                         default: png
+    -h | --help          This message
+    -V | --version       Print version information and exit
+    -l | --lang <lang>   Set the OCR languages to use.
+                         For multiple languages concatenate with a '+'
+                         E.g eng+deu for English and German
+                         Default: deu+eng+fra+ita+jpn+osd
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
@@ -117,6 +127,11 @@ ocrpdf --lang deu german.pdf
 .Run OCR with German, French and English dictionaries on multiple PDFs
 ----
 ocrpdf --lang deu+fra+eng  scanned_*.pdf
+----
+
+.Convert compsite images to JPEG before running running through OCR
+----
+ocrpdf --render jpeg scanned_document.pdf
 ----
 
 <<<
