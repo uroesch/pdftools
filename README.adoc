@@ -4,7 +4,7 @@
 :firstname: Urs
 :lastname:  Roesch
 :email:     github@bun.ch
-:revnumber: 0.5
+:revnumber: 0.6
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, tesseract, OCR
 :toc:       left
 
@@ -19,7 +19,7 @@ A script to convert PNGs, TIFFs or JPEGs to PDF files.
 License:: MIT
 Requires:: bash, pdfcat, ImageMagick, pdftk
 
-[[ocrpdf-usage]]
+[[img2-usage]]
 === Usage
 
 ----
@@ -35,7 +35,7 @@ Options:
                          between 0 and 360.
 ----
 
-[[ocrpdf-examples]]
+[[img2pdf-examples]]
 === Examples
 
 .Create single page pdfs from images
@@ -66,7 +66,9 @@ img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 Runs PDFs through OCR and saves the output as a text searchable PDF
 with the same name.
 
-NOTE: Only works with PDFs comprised of a single JPEG image per page.
+NOTE: Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
+image per page. LZW compressed images are being converted to ZIP compressed
+one during the OCR process.
 
 License:: MIT
 Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract

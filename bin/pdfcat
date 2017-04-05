@@ -14,8 +14,8 @@
 ## ----------------------------------------------------------------------------
 ## Globals
 ## ----------------------------------------------------------------------------
-VERSION=0.1
-PRODUCER="pdfcat ${VERSION}"
+PDFCAT_VERSION=0.1
+PRODUCER="pdfcat ${PDFCAT_VERSION}"
 SCRIPT=${0##*/}
 ARGUMENTS=$#
 REQUIRE_PDFTK=2

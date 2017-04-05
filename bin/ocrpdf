@@ -21,6 +21,7 @@ set -o errexit
 ## -----------------------------------------------------------------------------
 ## GLOBALS
 ## -----------------------------------------------------------------------------
+VERSION=0.2
 SCRIPT=${0##*/}
 DEPENDENCIES=(
   pdfcat
@@ -80,6 +81,13 @@ run_ocr() {
 
 ## -----------------------------------------------------------------------------
 
+print_version() {
+  echo ${SCRIPT} version ${VERSION}
+  exit 0
+}
+
+## -----------------------------------------------------------------------------
+
 usage() {
   local exit_code=$1
   cat <<USAGE
@@ -88,17 +96,21 @@ usage() {
     ${SCRIPT} [options] <file> [<file> [,,]]
 
   Options:
-    -h | --help   This message
-    -l | --lang   Set the OCR language for multiple concatenate with a +
-                  E.g eng+deu for English and German
-                  default: ${OCR_LANG}
+    -h | --help     This message
+    -v | --version  Print version information and exit
+    -l | --lang     Set the OCR language for multiple concatenate with a +
+                    E.g eng+deu for English and German
+                    default: ${OCR_LANG}
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
     with the same name.
 
   Disclaimer:
-    Only works with PDFs comprised of a single JPEG image per page.
+    Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
+    image per page.
+    LZW compressed images will be converted to ZIP compressed ones during
+    the OCR process.
 
 USAGE
   exit ${exit_code}
@@ -110,8 +122,8 @@ check_compatible() {
   local file="$1"; shift;
   ## check if all the images are single jpegs
   pdfimages -list "${file}" | awk \
-    '/^ +[0-9]/{p=$1; c++; $9 == "jpeg" && j++ }
-     END { if (p < c && p == j) {exit 1} }'
+    '/^ +[0-9]/{p=$1; c++; $9 ~ /^(jpeg|image)$/ && j++ }
+    END { if (p < c && p == j) {exit 1} }'
 }
 
 ## -----------------------------------------------------------------------------
@@ -124,7 +136,7 @@ ocr_pdfs() {
     fi
     workname="$$-${RANDOM}"
     meta="$( fetch_meta "${file}" )"
-    pdfimages -j "${file}" "${workname}" 2>/dev/null &&
+    pdfimages -all "${file}" "${workname}" 2>/dev/null &&
     for image in ${workname}*; do
       run_ocr ${image}
     done
@@ -141,7 +153,7 @@ post_process_pdf() {
   merge_pdf "${workname}.pdf" ${workname}*
   pdftk "${workname}.pdf" \
     update_info_utf8 <( echo "${meta}" ) \
-    output "${file}"
+    output "${file}" 2>/dev/null
   rm "${workname}.pdf"
 }
 
@@ -163,9 +175,10 @@ merge_pdf() {
 parse_opts() {
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -l|--lang) shift; OCR_LANG=$1;;
-      -h|--help) usage 0;;
-      *) PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
+      -v|--version) print_version;;
+      -l|--lang)    shift; OCR_LANG=$1;;
+      -h|--help)    usage 0;;
+      *)            PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
     esac
     shift
   done
