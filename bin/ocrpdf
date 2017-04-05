@@ -29,12 +29,14 @@ declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -a PDF_FILES=()
 declare    EXTENSION=pdf
+declare -g RENDER_FORMAT='png'
 declare -a INCLUDES=(
   pdfcat
 )
 declare -a DEPENDENCIES=(
   pdfcat
   pdfimages
+  pdftocairo
   pdftk
   tesseract
 )
@@ -103,22 +105,29 @@ function usage() {
     ${SCRIPT} [options] <file> [<file> [,,]]
 
   Options:
-    -h | --help         This message
-    -V | --version      Print version information and exit
-    -l | --lang <lang>  Set the OCR languages to use.
-                        For multiple languages concatenate with a '+'
-                        E.g eng+deu for English and German
-                        Default: ${OCR_LANG}
+    -h | --help          This message
+    -V | --version       Print version information and exit
+    -R | --render <img>  Render composite images as either png or jpeg before
+                         running through OCR.
+                         default: ${RENDER_FORMAT}
+    -l | --lang <lang>   Set the OCR languages to use.
+                         For multiple languages concatenate with a '+'
+                         E.g eng+deu for English and German
+                         Default: ${OCR_LANG}
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
     with the same name.
 
   Disclaimer:
-    Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
-    image per page.
-    LZW compressed images will be converted to ZIP compressed ones during
-    the OCR process.
+    Only works with quality degradation for PDFs comprised of a single
+    JPEG, LZW or deflated image per page.
+    LZW compressed images will be converted to deflated ones during
+    the OCR process but there is no loss of fidelity.
+    Composite images with multiple layers as JBIG2, CCITT or SMASKS
+    are rendered as a flat image before running through OCR. The
+    resulting PDFs are suffixed with '-${SCRIPT}.pdf' preserving the
+    original file.
 
 USAGE
   exit ${exit_code}
@@ -139,16 +148,17 @@ function check_compatibility() {
 
 function ocr_pdfs() {
   for file in "${PDF_FILES[@]}"; do
-    if ! check_compatibility "${file}"; then
-      echo "${file} is not compatible; skipping!"
-      continue
-    fi
-    workname="$$-${RANDOM}"
-    meta="$(pdfcat::fetch_meta "${file}")"
-    pdfimages -all "${file}" "${workname}" 2>/dev/null &&
-    for image in ${workname}*; do
-      run_ocr ${image}
-    done
+    local workname="$$-${RANDOM}"
+    local meta="$( fetch_meta "${file}" )"
+    if ! check_compatible "${file}"; then
+      pdftocairo -q -${RENDER_FORMAT} "${file}" "${workname}" 2>/dev/null &&
+      file="${file%.*}-${SCRIPT}.pdf"
+    else
+      pdfimages -all "${file}" "${workname}" 2>/dev/null
+    fi &&
+      for image in ${workname}*; do
+        run_ocr ${image}
+      done
     post_process_pdf "${file}" "${workname}" "${meta}"
   done
 }
@@ -188,6 +198,7 @@ function parse_options() {
     -V|--version) version;;
     -l|--lang)    shift; OCR_LANG=${1};;
     -h|--help)    usage 0;;
+    -R|--render)  shift; RENDER_FORMAT=$1;;
     *)            PDF_FILES+=( "${1}" );;
     esac
     shift
@@ -196,10 +207,21 @@ function parse_options() {
 
 # ------------------------------------------------------------------------------
 
+function evaluate_opts() {
+  case ${RENDER_FORMAT} in
+    png|jpeg) return 0;;
+    *)        usage 1;;
+  esac
+}
+
+
+# -----------------------------------------------------------------------------
+
 function cleanup() {
   local exit_code=$?
   rm $$-[0-9]*.{jpg,pdf} 2>/dev/null || :
   exit ${exit_code}
+  exit_code="$?"
 }
 
 # ------------------------------------------------------------------------------
@@ -209,4 +231,7 @@ check_dependencies
 source_includes
 determine_ocr_languages
 parse_options "${@}"
+set_ocr_language
+parse_opts "$@"
+evaluate_opts
 ocr_pdfs
