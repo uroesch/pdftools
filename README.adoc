@@ -6,6 +6,7 @@
 :email:     github@bun.ch
 :revnumber: 0.7.0
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, tesseract, OCR
+:icons:     font
 :!toc:
 
 A collection of PDF command line tools and wrappers for Linux
