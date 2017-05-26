@@ -44,7 +44,7 @@ check_dependencies() {
   for dependency in ${DEPENDENCIES[*]}; do
     if ! which ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
-      echo "Please install first!" 1>&2
+      echo "Please install to use this script!" 1>&2
       exit 64
     fi
   done
@@ -76,7 +76,7 @@ run_ocr() {
     rm "${filename}"
   else
     echo "An error occured during character recogntion" 1>&2
-    echo "Please chech leaving original image '${filename}' intact" 1>&2
+    echo "Leaving original image '${filename}' intact" 1>&2
     exit 128
   fi
 }
@@ -101,10 +101,10 @@ usage() {
     -R | --render <img>  Render composite images as either png or jpeg before
                          running through OCR.
                          default: ${RENDER_FORMAT}
-    -h | --help          This message
-    -v | --version       Print version information and exit
+    -h | --help          This message.
+    -v | --version       Print version information and exit.
     -l | --lang          Set the OCR language for multiple concatenate with a +
-                         E.g eng+deu for English and German
+                         E.g eng+deu for English and German.
                          default: ${OCR_LANG}
 
   Description:
