@@ -49,7 +49,7 @@ function check_dependencies() {
   for dependency in ${DEPENDENCIES[@]}; do
     if ! command -v ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
-      echo "Please install first!" 1>&2
+      echo "Please install to use this script!" 1>&2
       exit 64
     fi
   done
