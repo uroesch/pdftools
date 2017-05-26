@@ -56,7 +56,7 @@ img2pdf --delete first.png second.jpg
 img2pdf --rotate 180 myimage.png
 ----
 
-.Rotate the images by 180 degress and concatenate everyting into file `output.pdf`
+.Rotate the images by 180 degrees and concatenate everything into file `output.pdf`
 ----
 img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 ----
@@ -130,7 +130,7 @@ ocrpdf --lang deu german.pdf
 ocrpdf --lang deu+fra+eng  scanned_*.pdf
 ----
 
-.Convert compsite images to JPEG before running running through OCR
+.Convert composite images to JPEG before running running through OCR
 ----
 ocrpdf --render jpeg scanned_document.pdf
 ----
@@ -213,7 +213,7 @@ pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
 [[pdfresize]]
 == pdfresize
 
-A wrapper aroung `ghostscript` to reduce the size of a scanned document
+A wrapper around `ghostscript` to reduce the size of a scanned document
 
 NOTE: pdfresize is very likely not working with PDF documents containing
 https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
