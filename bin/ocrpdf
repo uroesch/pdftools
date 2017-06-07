@@ -34,6 +34,7 @@ INCLUDES=(
   pdfcat
 )
 PDF_FILES=()
+REPLACE=false
 RENDER_FORMAT='png'
 
 ## -----------------------------------------------------------------------------
@@ -98,14 +99,15 @@ usage() {
     ${SCRIPT} [options] <file> [<file> [,,]]
 
   Options:
-    -R | --render <img>  Render composite images as either png or jpeg before
-                         running through OCR.
-                         default: ${RENDER_FORMAT}
-    -h | --help          This message.
-    -v | --version       Print version information and exit.
-    -l | --lang          Set the OCR language for multiple concatenate with a +
-                         E.g eng+deu for English and German.
-                         default: ${OCR_LANG}
+    -h | --help           This message.
+    -l | --lang           Set the OCR language for multiple concatenate with a +
+                          E.g eng+deu for English and German.
+                          default: ${OCR_LANG}
+    -r | --replace        Replace the input PDF with the OCRed version.
+    -F | --render-format  When rendering is switched on convert either to jpeg
+                          or png before running through OCR.
+                          default: ${RENDER_FORMAT}
+    -v | --version        Print version information and exit.
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
@@ -137,20 +139,29 @@ check_compatible() {
 
 ## -----------------------------------------------------------------------------
 
+determine_filename() {
+  local file=$1; shift;
+  if [[ ${REPLACE} == false ]]; then
+    file="${file%.*}-${SCRIPT}.pdf"
+  fi
+  echo ${file}
+}
+
+## -----------------------------------------------------------------------------
+
 ocr_pdfs() {
   for file in "${PDF_FILES[@]}"; do
     local workname="$$-${RANDOM}"
-    local meta="$( fetch_meta "${file}" )"
+    local meta="$(fetch_meta "${file}")"
     if ! check_compatible "${file}"; then
-      pdftocairo -q -${RENDER_FORMAT} "${file}" "${workname}" 2>/dev/null &&
-      file="${file%.*}-${SCRIPT}.pdf"
+      pdftocairo -q -${RENDER_FORMAT} "${file}" "${workname}" 2>/dev/null
     else
       pdfimages -all "${file}" "${workname}" 2>/dev/null
     fi &&
       for image in ${workname}*; do
         run_ocr ${image}
       done
-    post_process_pdf "${file}" "${workname}" "${meta}"
+    post_process_pdf "$(determine_filename "${file}")" "${workname}" "${meta}"
   done
 }
 
@@ -185,11 +196,12 @@ merge_pdf() {
 parse_opts() {
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -v|--version) print_version;;
-      -l|--lang)    shift; OCR_LANG=$1;;
-      -R|--render)  shift; RENDER_FORMAT=$1;;
-      -h|--help)    usage 0;;
-      *)            PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
+      -v|--version)        print_version;;
+      -l|--lang)           shift; OCR_LANG=$1;;
+      -F|--render-format)  shift; RENDER_FORMAT=$1;;
+      -r|--replace)        REPLACE=$1;;
+      -h|--help)           usage 0;;
+      *)                   PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
     esac
     shift
   done
