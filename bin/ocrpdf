@@ -31,6 +31,7 @@ declare -a PDF_FILES=()
 declare    EXTENSION=pdf
 declare -g RENDER_FORMAT='png'
 declare -g REPLACE=false
+declare -g SUFFIX=${SCRIPT}
 declare -a INCLUDES=(
   pdfcat
 )
@@ -109,13 +110,18 @@ function usage() {
     -h | --help           This message
     -V | --version        Print version information and exit
     -r | --replace        Replace the input PDF with the OCRed version.
-    -F | --render-format  When rendering is switched on convert either to jpeg
-                          or png before running through OCR.
-                          default: ${RENDER_FORMAT}
     -l | --lang <lang>    Set the OCR languages to use.
                           For multiple languages concatenate with a '+'
                           E.g eng+deu for English and German
                           Default: ${OCR_LANG}
+    -F | --render-format <format> 
+                         When rendering is switched on convert either to 
+                         jpeg or png before running through OCR.
+                         default: ${RENDER_FORMAT}
+    -s | --suffix <suffix> 
+                         Set a suffix to be appended to the file's 
+                         basename. Implies '-r'. 
+                         default: ${SUFFIX}
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
@@ -151,7 +157,7 @@ function check_compatibility() {
 function determine_filename() {
   local file=$1; shift;
   if [[ ${REPLACE} == false ]]; then
-    file="${file%.*}-${SCRIPT}.pdf"
+    file="${file%.*}-${SUFFIX}.pdf"
   fi
   echo ${file}
 }
@@ -206,12 +212,12 @@ function parse_options() {
  [[ ${#} -lt 1 ]] && usage 1
   while [[ ${#} -gt 0 ]]; do
     case ${1} in
-    -V|--version)        version;;
-    -l|--lang)           shift; OCR_LANG=${1};;
     -F|--render-format)  shift; RENDER_FORMAT=$1;;
-    -r|--replace)        REPLACE=$1;;
     -h|--help)           usage 0;;
-    -R|--render)         shift; RENDER_FORMAT=$1;;
+    -l|--lang)           shift; OCR_LANG=$1;;
+    -s|--suffix)         shift; SUFFIX=$1;;
+    -r|--replace)        REPLACE=$1;;
+    -V|--version)        version;;
     *)                   PDF_FILES+=( "${1}" );;
     esac
     shift
