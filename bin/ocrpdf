@@ -36,6 +36,7 @@ INCLUDES=(
 PDF_FILES=()
 REPLACE=false
 RENDER_FORMAT='png'
+SUFFIX=${SCRIPT}
 
 ## -----------------------------------------------------------------------------
 ## FUNCTIONS
@@ -99,15 +100,20 @@ usage() {
     ${SCRIPT} [options] <file> [<file> [,,]]
 
   Options:
-    -h | --help           This message.
-    -l | --lang           Set the OCR language for multiple concatenate with a +
-                          E.g eng+deu for English and German.
-                          default: ${OCR_LANG}
-    -r | --replace        Replace the input PDF with the OCRed version.
-    -F | --render-format  When rendering is switched on convert either to jpeg
-                          or png before running through OCR.
-                          default: ${RENDER_FORMAT}
-    -v | --version        Print version information and exit.
+    -h | --help          This message.
+    -l | --lang          Set the OCR language for multiple concatenate with 
+                         a +. E.g eng+deu for English and German.
+                         default: ${OCR_LANG}
+    -r | --replace       Replace the input PDF with the OCRed version.
+    -F | --render-format <format> 
+                         When rendering is switched on convert either to 
+                         jpeg or png before running through OCR.
+                         default: ${RENDER_FORMAT}
+    -s | --suffix <suffix> 
+                         Set a suffix to be appended to the file's 
+                         basename. Implies '-r'. 
+                         default: ${SUFFIX}
+    -V | --version       Print version information and exit.
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
@@ -142,7 +148,7 @@ check_compatible() {
 determine_filename() {
   local file=$1; shift;
   if [[ ${REPLACE} == false ]]; then
-    file="${file%.*}-${SCRIPT}.pdf"
+    file="${file%.*}-${SUFFIX}.pdf"
   fi
   echo ${file}
 }
@@ -196,11 +202,12 @@ merge_pdf() {
 parse_opts() {
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -v|--version)        print_version;;
-      -l|--lang)           shift; OCR_LANG=$1;;
       -F|--render-format)  shift; RENDER_FORMAT=$1;;
-      -r|--replace)        REPLACE=$1;;
       -h|--help)           usage 0;;
+      -l|--lang)           shift; OCR_LANG=$1;;
+      -s|--suffix)         shift; SUFFIX=$1;;
+      -r|--replace)        REPLACE=$1;;
+      -V|--version)        print_version;;
       *)                   PDF_FILES=( "${PDF_FILES[@]}" "$1" );;
     esac
     shift
