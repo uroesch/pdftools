@@ -46,7 +46,7 @@ usage() {
       ${SCRIPT} --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
 
       Modify creation date
-      ${SCRIPT} --creation-date "2017-01-01 22:30:45" unicorn.pdf 
+      ${SCRIPT} --creation-date "2017-01-01 22:30:45" unicorn.pdf
 
 USAGE
 

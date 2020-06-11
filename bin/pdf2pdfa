@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script to convert a PDF to PDF/A via conversion to postscript and back
+# Based on the answer from:
+#   https://unix.stackexchange.com/questions/79516/converting-pdf-to-pdf-a
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# Setup
+# -----------------------------------------------------------------------------
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# -----------------------------------------------------------------------------
+# Globals
+# -----------------------------------------------------------------------------
+declare -r SCRIPT=${0#*/}
+declare -g SUFFIX=_a
+declare -a PDF_FILES=()
+declare -a DEPENDENCIES=(
+  gs
+  pdftops
+)
+
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+function check_dependencies() {
+  for dependency in ${DEPENDENCIES[@]}; do
+    if ! which ${dependency} >/dev/null 2>&1; then
+      echo "Missing dependency '${dependency}'" 1>&2
+      echo "Please install first!" 1>&2
+      exit 64
+    fi
+  done
+}
+
+# -----------------------------------------------------------------------------
+
+function convert_pdf() {
+  for pdf_original in "${PDF_FILES[@]}"; do
+    file "${pdf_original}" | grep -q -w PDF || continue
+    to_pdfa "${pdf_original}"
+  done
+}
+
+# -----------------------------------------------------------------------------
+
+function to_pdfa() {
+  local pdf_document="${1}"; shift;
+  local ps_document=$(to_postscript "${pdf_document}")
+  local pdfa_document=${pdf_document%%.*}${SUFFIX}.pdf
+
+  gs \
+    -dPDFA \
+    -dBATCH \
+    -dNOPAUSE \
+    -dNOOUTERSAVE \
+    -sProcessColorModel=DeviceCMYK \
+    -sDEVICE=pdfwrite \
+    -sPDFACompatibilityPolicy=1 \
+    -sOutputFile="${pdfa_document}" \
+    "${ps_document}" >/dev/null 2>&1
+
+  rm "${ps_document}"
+}
+
+# -----------------------------------------------------------------------------
+
+function to_postscript() {
+  local pdf_document="${1}"; shift;
+  local ps_document=$(mktemp)
+  pdftops "${pdf_document}" "${ps_document}"
+  echo ${ps_document}
+}
+
+# -----------------------------------------------------------------------------
+
+function usage() {
+  local exit_code=${1:-}; shift;
+  cat <<USAGE
+  Usage:
+    ${SCRIPT} [-h] [-s <suffix>] <pdf_file> [<pdf_file> [..]]
+
+  Options:
+    -h | --help             This message
+    -s | --suffix <suffix>  Append <suffix> to filename
+                            Default '${SUFFIX}'
+
+USAGE
+  exit ${exit_code}
+}
+
+# -----------------------------------------------------------------------------
+
+function parse_options() {
+  [[ $# -eq 0 ]] && usage 1
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -s|--suffix) shift; SUFFIX=${1};;
+    -h|--help) usage 0;;
+    -*) usage 1;;
+    *) PDF_FILES=( "${PDF_FILES[@]}" "${1}" );;
+    esac
+    shift
+  done
+}
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+check_dependencies
+parse_options "${@}"
+convert_pdf
