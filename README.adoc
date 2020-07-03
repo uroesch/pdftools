@@ -192,16 +192,23 @@ Requires:: bash, ghostscript
 === Usage
 
 ----
-Usage: pdfresize [pdfsettings] <input> <output>
 
-  <input>      A PDF file preferably of high resolution
-  <output>     Name of the PDF file to save the result to
-  pdfsettings
+  Usage: pdfresize [-q pdfsettings] -i <input> -o <output>
+
+    -h | --help              This message
+    -i | --input <input>     A PDF file preferably of high resolution
+    -o | --output <output>   Name of the PDF file to save the result to
+    -q | --quality <quality> Quality settings for output PDF.
+                             See quality keywords for acceptable input.
+    -V | --version           Print version and exit.
+
+  Quality keywords:
     screen   - low-resolution; comparable to "Screen Optimized" in Acrobat Distiller
     ebook    - medium-resolution; comparable to "eBook" in Acrobat Distiller
     printer  - comparable to "Print Optimized" in Acrobat Distiller
     prepress - comparable to "Prepress Optimized" in Acrobat Distiller
     default  - intended to be useful across a wide variety of uses
+
 ----
 
 [[pdfresize-examples]]
@@ -209,12 +216,12 @@ Usage: pdfresize [pdfsettings] <input> <output>
 
 .Resize to default resolution
 ----
-pdresize input.pdf output.pdf
+pdresize --input input.pdf --output output.pdf
 ----
 
 .Resize to sreen resolution
 ----
-pdfresize screen input.pdf output.pdf
+pdfresize --quality screen --input input.pdf --output output.pdf
 ----
 
 [[pdf2pdfa]]

@@ -4,23 +4,43 @@
 # A wrapper aroung ghostscript to reduce the size of a scanned document
 #------------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## Author:        Urs Roesch <github@bun.ch>
-## License:       MIT
-## Requires:      bash, ghostscript
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Author:        Urs Roesch <github@bun.ch>
+# License:       MIT
+# Requires:      bash, ghostscript
+# -----------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## Globals
-## ----------------------------------------------------------------------------
-SCRIPT=${0##*/}
-DEPENDENCIES=( gs )
+# -----------------------------------------------------------------------------
+# Setup
+# -----------------------------------------------------------------------------
+set -o errexit
+set -o nounset
+set -o pipefail
 
-## ----------------------------------------------------------------------------
-## Functions
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Globals
+# -----------------------------------------------------------------------------
+declare -r VERSION=0.0.2
+declare -r AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r LICENSE="MIT"
+declare -r SCRIPT=${0##*/}
+declare -g SETTINGS=default
+declare -g INPUT=""
+declare -g OUTPUT=""
+declare -a DEPENDENCIES=( gs )
+declare -a KEYWORDS=(
+  default
+  ebook
+  prepress
+  printer
+  screen
+)
 
-check_dependencies() {
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+function check_dependencies() {
   for dependency in ${DEPENDENCIES[*]}; do
     if ! which ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
@@ -30,69 +50,101 @@ check_dependencies() {
   done
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-usage() {
-  cat <<USAGE
-
-  Usage: ${SCRIPT} [pdfsettings] <input> <output>
-
-    <input>      A PDF file preferably of high resolution
-    <output>     Name of the PDF file to save the result to
-    pdfsettings
-      screen   - low-resolution; comparable to "Screen Optimized" in Acrobat Distiller
-      ebook    - medium-resolution; comparable to "eBook" in Acrobat Distiller
-      printer  - comparable to "Print Optimized" in Acrobat Distiller
-      prepress - comparable to "Prepress Optimized" in Acrobat Distiller
-      default  - intended to be useful across a wide variety of uses
-
-USAGE
-    exit 1
+function version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-resample_pdf() {
+function usage() {
+  local exit_code=${1:-1}
+  cat <<USAGE
+
+  Usage: ${SCRIPT} [-q pdfsettings] -i <input> -o <output>
+
+    -h | --help              This message
+    -i | --input <input>     A PDF file preferably of high resolution
+    -o | --output <output>   Name of the PDF file to save the result to
+    -q | --quality <quality> Quality settings for output PDF.
+                             See quality keywords for acceptable input.
+    -V | --version           Print version and exit.
+
+  Quality keywords:
+    screen   - low-resolution; comparable to "Screen Optimized" in Acrobat Distiller
+    ebook    - medium-resolution; comparable to "eBook" in Acrobat Distiller
+    printer  - comparable to "Print Optimized" in Acrobat Distiller
+    prepress - comparable to "Prepress Optimized" in Acrobat Distiller
+    default  - intended to be useful across a wide variety of uses
+
+USAGE
+    exit ${exit_code}
+}
+
+# -----------------------------------------------------------------------------
+
+function resample_pdf() {
   gs \
     -q \
     -dNOPAUSE \
     -dBATCH \
-    -sDEVICE=pdfwrite \
-    -sColorConversionStrategy=/UseDeviceIndependentColor \
+    -dPrinted=false \
     -dCompatibilityLevel=1.4 \
     -dPDFSETTINGS=/${SETTINGS} \
+    -sDEVICE=pdfwrite \
     -sOutputFile="${OUTPUT}" \
     "${INPUT}" \
-    &>/dev/null
+    1>/dev/null
 }
 
+# -----------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-
-parse_opts() {
-  case $# in
-    3) SETTINGS=$1; shift
-      get_arguments "$1" "$2"
-      ;;
-    2) get_arguments "$1" "$2"
-      ;;
-    *) usage;
-      ;;
-  esac
+function parse_options() {
+  [[ ${#} -lt 1 ]] && usage 1
+  while [[ ${#} -gt 0 ]]; do
+    case ${1} in
+    -i|--input)   shift; INPUT=${1};;
+    -o|--output)  shift; OUTPUT=${1};;
+    -q|--quality) shift; SETTINGS=${1};;
+    -h|--help)    usage 0;;
+    -V|--version) version;;
+    *)            usage 1;;
+    esac
+    shift
+  done
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-get_arguments() {
-  INPUT=$1; shift;
-  OUTPUT=$1; shift;
-  SETTINGS=${SETTINGS:-default}
+function evaluate_options() { 
+  local message=""
+  local keywords=${KEYWORDS[@]}
+  if [[ -z ${INPUT} ]]; then
+    message+="Missing input PDF!\n"
+  fi
+
+  if [[ -z ${OUTPUT} ]]; then
+    message+="Missing ouput PDF!\n"
+  fi
+
+  if [[ ! ${SETTINGS} =~ ^${keywords// /|}$ ]]; then
+    message+="Invalid quality keyword!\n"
+  fi
+
+  if [[ -n ${message} ]]; then
+    printf "\n\n${message}"
+    usage 1
+  fi
+ 
 }
 
-## ----------------------------------------------------------------------------
-## Main
-## ----------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
 check_dependencies
-parse_opts "$@"
+parse_options "$@"
+evaluate_options
 resample_pdf
