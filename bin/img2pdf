@@ -1,46 +1,50 @@
 #!/bin/bash
 
-## ----------------------------------------------------------------------------
-## A script to convert PNG, TIFF or JPEG to PDF files. 
-## ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# A script to convert PNG, TIFF or JPEG to PDF files. 
+# ------------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## Author:        Urs Roesch <github@bun.ch>
-## License:       MIT
-## Requires:      bash, ImageMagick, pdfcat, pdftk
-## ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Author:        Urs Roesch <github@bun.ch>
+# License:       MIT
+# Requires:      bash, ImageMagick, pdfcat, pdftk
+# ------------------------------------------------------------------------------
 
-## --------------------------------------------------------------------------
-## Settings
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Setup
+# ------------------------------------------------------------------------------
 set -o nounset
 set -o errexit
+set -o pipefail
 
-## --------------------------------------------------------------------------
-## Globals
-## --------------------------------------------------------------------------
-SCRIPT=${0##*/}
-IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
-IMAGE_QUALITY=${IMAGE_QUALITY:-90}
-IMAGE_ROTATE=""
-PDF_PREFIX=""
-OUTPUT=""
-DELETE_IMAGES=false
-IMAGES=()
-DEPENDENCIES=(
+# ------------------------------------------------------------------------------
+# Globals
+# ------------------------------------------------------------------------------
+declare -r SCRIPT=${0##*/}
+declare -r VERSION=0.1.1
+declare -r AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r LICENSE="MIT"
+declare -g IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
+declare -g IMAGE_QUALITY=${IMAGE_QUALITY:-90}
+declare -g IMAGE_ROTATE=""
+declare -g PDF_PREFIX=""
+declare -g OUTPUT=""
+declare -g DELETE_IMAGES=false
+declare -a IMAGES=()
+declare -a DEPENDENCIES=(
   identify
   convert
   pdfcat
 )
-INCLUDES=(
+declare -a INCLUDES=(
   pdfcat
 )
 
-## --------------------------------------------------------------------------
-## Functions
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Functions
+# ------------------------------------------------------------------------------
 
-check_dependencies() {
+function check_dependencies() {
   for dependency in ${DEPENDENCIES[*]}; do
     if ! which ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
@@ -50,18 +54,26 @@ check_dependencies() {
   done
 }
 
-## -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-source_includes() {
+function version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
+}
+
+# ------------------------------------------------------------------------------
+
+function source_includes() {
   for include in ${INCLUDES[*]}; do
     local path=$( which ${include} 2>/dev/null )
     [[ -n ${path} ]] && source ${path}
   done
 }
 
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-usage() {
+function usage() {
   local exit_code=$1
   cat <<USAGE
 
@@ -72,59 +84,66 @@ usage() {
     -h  | --help           This message
     -d  | --delete         Delete the images after creating the PDF file.
     -o  | --output <name>  Write the output to specified file <name>.
-                           Implies -s
     -r  | --rotate <value> Rotate the image by <value>
                            Where value can be a positive or negative integer
-			   between 0 and 360.
+			                     between 0 and 360.
+    -V  | --on version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
+}
+ion        Display version and exit
 
 USAGE
   exit ${exit_code}
 }
 
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-check_image() {
+function check_image() {
   local image="$1"
   ftype=$( identify -format %m ${image} 2>/dev/null )
   case ${ftype} in
-     PNG|TIF*)
-       IMAGE_COMPRESSION=lzw
-       IMAGE_QUALITY=9
-       return 0
-       ;;
-     JPEG)
-       IMAGE_COMPRESSION=jpeg
-       IMAGE_QUALITY=90
-       return 0
-       ;;
-     PDF|*)
-       return 1
-       ;;
+  PNG|TIF*)
+    IMAGE_COMPRESSION=lzw
+    IMAGE_QUALITY=9
+    return 0
+    ;;
+  JPEG)
+    IMAGE_COMPRESSION=jpeg
+    IMAGE_QUALITY=90
+    return 0
+    ;;
+  PDF|*)
+    return 1
+    ;;
   esac
 }
 
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-parse_opts() {
+function parse_options() {
   if [ $# -lt 1 ]; then
      usage 1
   fi
   while [ $# -gt 0 ]; do
     case $1 in
-      -h|--help)         usage 0;;
-      -d|--delete)       DELETE_IMAGES=true;;
-      -r|--rotate)       shift; IMAGE_ROTATE=$1;;
-      -o|--output)       shift; OUTPUT=$1; PDF_PREFIX="$$-${RANDOM}-";;
-      *)                 IMAGES=( "${IMAGES[@]-}" "$1" );;
+      -h|--help)    usage 0;;
+      -d|--delete)  DELETE_IMAGES=true;;
+      -r|--rotate)  shift; IMAGE_ROTATE=$1;;
+      -o|--output)  shift; OUTPUT=$1; PDF_PREFIX="$$-${RANDOM}-";;
+      -V|--version) version;;
+      *)            IMAGES=( "${IMAGES[@]-}" "$1" );;
     esac
     shift
   done
   IMAGES=( "${IMAGES[@]:1}" )
 }
 
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-create_pdf() {
+
+function create_pdf() {
   local dest="$( [[ -n ${OUTPUT} ]] && echo ${OUTPUT} || echo ${IMAGES[0]} )"
   local pdfs=()
   for image in "${IMAGES[@]}"; do
@@ -143,20 +162,20 @@ create_pdf() {
   mv "$$-${dest}" "${dest%.*}.pdf"
 }
 
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-delete_images() {
+function delete_images() {
   ## delete the original images
   if [ ${DELETE_IMAGES} = true ]; then
     rm "${IMAGES[@]}"
   fi
 }
 
-## --------------------------------------------------------------------------
-## Main
-## --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------------------
 check_dependencies
 source_includes
-parse_opts "$@"
+parse_options "$@"
 create_pdf
 delete_images
