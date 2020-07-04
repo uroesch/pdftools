@@ -1,30 +1,39 @@
 #!/bin/bash
 
-## ----------------------------------------------------------------------------
-## A wrapper script around `pdftk` to manipulate a PDFs meta data
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# A wrapper script around `pdftk` to manipulate a PDFs meta data
+# -----------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## Author:        Urs Roesch <github@bun.ch>
-## License:       MIT
-## Requires:      bash >= 4.0, pdftk >= 2.0
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Author:        Urs Roesch <github@bun.ch>
+# License:       MIT
+# Requires:      bash >= 4.0, pdftk >= 2.0
+# -----------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## Globals
-## ----------------------------------------------------------------------------
-VERSION=0.1.0
-PRODUCER="pdfmeta ${VERSION}"
-SCRIPT=${0##*/}
-REQUIRE_BASH=4
-REQUIRE_PDFTK=2
-FILES=()
+# -----------------------------------------------------------------------------
+# Setup
+# -----------------------------------------------------------------------------
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# -----------------------------------------------------------------------------
+# Globals
+# -----------------------------------------------------------------------------
+declare -r SCRIPT=${0##*/}
+declare -r VERSION=0.1.1
+declare -r AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r LICENSE="MIT"
+declare -r PRODUCER="${SCRIPT} ${VERSION}"
+declare -r REQUIRE_BASH=4
+declare -r REQUIRE_PDFTK=2
+declare -a FILES
 declare -A META
 
-## ----------------------------------------------------------------------------
-## Functions
-## ----------------------------------------------------------------------------
-usage() {
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+function usage() {
   local exit_code=$1; shift;
   cat << USAGE
   Usage:
@@ -39,6 +48,7 @@ usage() {
       -p | --producer           Define the PDFs producing program
       -C | --creation-date      Set the creation date of the PDF
       -M | --modification-date  Set the modification date of the PDF
+      -V | --version            Display version and exit
 
     Examples:
 
@@ -53,67 +63,82 @@ USAGE
   exit ${exit_status}
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-check_compatibility() {
+function version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
+}
+
+# -----------------------------------------------------------------------------
+
+function pdftk_major() {
+  pdftk --version | \
+    awk '/^pdftk/ { print int(gensub("[^0-9.]", "", "g", $0)); exit }'
+}
+
+# -----------------------------------------------------------------------------
+
+function check_compatibility() {
   if [[ ${BASH_VERSINFO[0]} -lt ${REQUIRE_BASH} ]]; then
-     echo "Bash version ${REQUIRE_BASH} or higher is required!" 1&>2
-     exit 128
+    echo "Bash version ${REQUIRE_BASH} or higher is required!" 1&>2
+    exit 128
   fi
   if ! which pdftk &>/dev/null; then
-     echo "Required binary 'pdftk' was not found on this system" 1&>2
-     exit 127
+    echo "Required binary 'pdftk' was not found on this system" 1&>2
+    exit 127
   else
-     pdftk_major=$(pdftk --version | awk '/^pdftk/ { print int($2) }')
-     if [[ ${pdftk_major} -lt ${REQUIRE_PDFTK} ]]; then
-       echo "Pdftk version ${REQUIRE_PDFTK}  or higher is required!" 1&>2
-       exit 128
-     fi
+    if [[ $(pdftk_major) -lt ${REQUIRE_PDFTK} ]]; then
+      echo "Pdftk version ${REQUIRE_PDFTK}  or higher is required!" 1&>2
+      exit 128
+    fi
   fi
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-convert_date() {
+function convert_date() {
   local datetime=$1; shift
   date -d "${datetime}" +D:%Y%m%d%H%M%S%z
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-parse_opts() {
+function parse_options() {
   [[ $# -eq 0 ]] && usage 0;
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -a|--author)            shift; META[Author]="$1";;
-      -k|--keywords)          shift; META[Keywords]="$1";;
-      -t|--title)             shift; META[Title]="$1";;
-      -s|--subject)           shift; META[Subject]="$1";;
-      -c|--creator)           shift; META[Creator]="$1";;
-      -p|--producer)          shift; META[Producer]="$1";;
-      -C|--creation-date)     shift; META[CreationDate]="$1";;
-      -M|--modification-date) shift; META[ModDate]="$1";;
-      -h|--help)              usage 0;;
-      *) FILES=( "${FILES[@]}" "$1")
+    -a|--author)            shift; META[Author]="$1";;
+    -k|--keywords)          shift; META[Keywords]="$1";;
+    -t|--title)             shift; META[Title]="$1";;
+    -s|--subject)           shift; META[Subject]="$1";;
+    -c|--creator)           shift; META[Creator]="$1";;
+    -p|--producer)          shift; META[Producer]="$1";;
+    -C|--creation-date)     shift; META[CreationDate]="$1";;
+    -M|--modification-date) shift; META[ModDate]="$1";;
+    -h|--help)              usage 0;;
+    -V|--version)           version;;
+    *) FILES=( "${FILES[@]}" "$1")
     esac
     shift
   done
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-check_input() {
+function check_input() {
   if [[ ${#META[@]} -lt 1 ]]; then
     usage 1;
   fi
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-assemble_meta_data() {
+function assemble_meta_data() {
   for key in "${!META[@]}"; do
     case ${key} in
-      *Date) META[${key}]="$(convert_date "${META[${key}]}")";;
+    *Date) META[${key}]="$(convert_date "${META[${key}]}")";;
     esac
     echo InfoBegin
     echo InfoKey: ${key}
@@ -121,9 +146,9 @@ assemble_meta_data() {
   done
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-file_is_pdf() {
+function file_is_pdf() {
   local file="$1"
 
   if [[ ! -e "${file}" ]]; then
@@ -136,9 +161,9 @@ file_is_pdf() {
   fi
 }
 
-## ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-update_meta() {
+function update_meta() {
   local file="$1"; shift;
   local meta="$( assemble_meta_data )"
   local work_file="${file}-${RANDOM}-$$"
@@ -153,10 +178,11 @@ update_meta() {
   fi
 }
 
-## ----------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
 check_compatibility
-parse_opts "$@"
+parse_options "$@"
 check_input
 for file in "${FILES[@]}"; do
   update_meta "${file}"
