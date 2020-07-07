@@ -6,6 +6,12 @@
 #   https://unix.stackexchange.com/questions/79516/converting-pdf-to-pdf-a
 # -----------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# Author:        Urs Roesch <github@bun.ch>
+# License:       MIT
+# Requires:      bash, ghostscript, pdftops
+# ------------------------------------------------------------------------------
+
 # -----------------------------------------------------------------------------
 # Setup
 # -----------------------------------------------------------------------------
@@ -17,6 +23,9 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0#*/}
+declare -r VERSION=0.1.0
+declare -r AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r LICENSE="MIT"
 declare -g SUFFIX=_a
 declare -a PDF_FILES=()
 declare -a DEPENDENCIES=(
@@ -35,6 +44,14 @@ function check_dependencies() {
       exit 64
     fi
   done
+}
+
+# -----------------------------------------------------------------------------
+
+function version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
 }
 
 # -----------------------------------------------------------------------------
@@ -88,6 +105,7 @@ function usage() {
     -h | --help             This message
     -s | --suffix <suffix>  Append <suffix> to filename
                             Default '${SUFFIX}'
+    -V | --version          Display v
 
 USAGE
   exit ${exit_code}
@@ -101,6 +119,7 @@ function parse_options() {
     case $1 in
     -s|--suffix) shift; SUFFIX=${1};;
     -h|--help) usage 0;;
+    -V|--version) version;;
     -*) usage 1;;
     *) PDF_FILES=( "${PDF_FILES[@]}" "${1}" );;
     esac
