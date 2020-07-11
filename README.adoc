@@ -77,13 +77,26 @@ Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
 === Usage
 
 ----
-ocrpdf [options] <file> [<file> [,,]]
+  Usage:
+    ocrpdf [options] <file> [<file> [,,]]
 
-Options:
-  -h | --help   This message
-  -l | --lang   Set the OCR language for multiple concatenate with a +
-                E.g eng+deu for English and German
-                default: <all installed languages>
+  Options:
+    -h | --help         This message
+    -V | --version      Print version information and exit
+    -l | --lang <lang>  Set the OCR languages to use.
+                        For multiple languages concatenate with a '+'
+                        E.g eng+deu for English and German
+                        Default: deu+eng+fra+ita+jpn+osd
+
+  Description:
+    Runs PDFs through OCR and saves the output as a text searchable PDF
+    with the same name.
+
+  Disclaimer:
+    Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
+    image per page.
+    LZW compressed images will be converted to ZIP compressed ones during
+    the OCR process.
 ----
 
 [[ocrpdf-exmples]]
