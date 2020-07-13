@@ -1,0 +1,58 @@
+# -----------------------------------------------------------------------------
+# Test dependencies for pdftools
+# Author: Urs Roesch https://github.com/uroesch
+# Version: 0.1.0 
+# -----------------------------------------------------------------------------
+name: test-dependencies
+
+on:
+  push:
+    branches: 
+    - workflow/*
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build-package:
+    timeout-minutes: 10
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-20.04
+        - ubuntu-18.04
+        - ubuntu-16.04
+
+    steps:
+    - name: Install pdftk on Ubuntu 18.04
+      if: matrix.os == 'ubuntu-18.04'
+      shell: bash
+      run: >
+        sudo snap install pdftk
+    
+    - name: Install pdftk on non Ubuntu 18.04
+      if: matrix.os != 'ubuntu-18.04'
+      shell: bash
+      run: >
+        sudo apt-get -y install pdftk
+
+    - name: Install dependencies other than pdftk
+      shell: bash
+      run: >
+        sudo apt-get -y install imagemagick tesseract-ocr poppler-utils ghostscript 
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Check dependencies 
+      shell: bash
+      run: |
+        export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
+        echo ${PATH}
+        for script in bin/*; do
+          [[ ${script} =~ pdfcat ]] && continue
+          echo "Tesing dependencies for '${script}'"
+          ${script} --version
+          echo ""
+        done 
