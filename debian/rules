@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+# Find the arch we are building for, as this determines
+# the location of plugins in /usr/lib
+BIN_DIR = $(CURDIR)/bin
+TOP = $(CURDIR)/debian/pdftools
+
+%:
+	# For jessie and beyond
+	#
+	dh $@
+
+override_dh_install:
+	install -d $(TOP)/usr/bin
+	install -m 0755 $(BIN_DIR)/* $(TOP)/usr/bin/
+	dh_install
+
+override_dh_clean:
+	dh_clean

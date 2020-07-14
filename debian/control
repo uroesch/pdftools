@@ -1,0 +1,17 @@
+Source: pdftools
+Section: utils
+Priority: optional
+Maintainer: Urs Roesch <github@bun.ch>
+
+Package: pdftools
+Standards-Version: 0.1.0
+Architecture: any
+Homepage: https://github.com/uroesch/pdftools
+Essential: no
+Depends: tesseract-ocr, 
+         pdftk,
+         imagemagick,
+         poppler-utils,
+         ghostscript
+Description: A collection of shell wrappers around pdf
+  tools to make them user friendly.
