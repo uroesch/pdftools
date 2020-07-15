@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.1
+declare -r VERSION=0.1.2
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r PRODUCER="${SCRIPT} ${VERSION}"
@@ -34,7 +34,7 @@ declare -A META
 # Functions
 # -----------------------------------------------------------------------------
 function usage() {
-  local exit_code=$1; shift;
+  local exit_code=${1:-1}; shift;
   cat << USAGE
   Usage:
     ${SCRIPT} <options> <pdf> [[<pdf>] ..]
@@ -60,7 +60,7 @@ function usage() {
 
 USAGE
 
-  exit ${exit_status}
+  exit ${exit_code}
 }
 
 # -----------------------------------------------------------------------------
