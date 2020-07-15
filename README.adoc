@@ -23,16 +23,18 @@ Requires:: bash, pdfcat, ImageMagick, pdftk
 === Usage
 
 ----
-img2pdf <options> <img-file> [<img-file> ... ]
+  Usage:
+    img2pdf <options> <img-file> [<img-file> ... ]
 
-Options:
-  -h  | --help           This message
-  -d  | --delete         Delete the images after creating the PDF file.
-  -o  | --output <name>  Write the output to specified file <name>.
-                         Implies -s
-  -r  | --rotate <value> Rotate the image by <value>
-                         Where value can be a positive or negative integer
-                         between 0 and 360.
+  Options:
+    -h  | --help           This message
+    -d  | --delete         Delete the images after creating the PDF file.
+    -o  | --output <name>  Write the output to specified file <name>.
+    -r  | --rotate <value> Rotate the image by <value>
+                           Where value can be a positive or negative integer
+                           between 0 and 360.
+    -V  | --version        Display version and exit
+
 ----
 
 [[img2pdf-examples]]
@@ -162,17 +164,19 @@ Requires:: bash >= 4.0, pdftk >= 2.0
 === Usage
 
 ----
-pdfmeta <options> <pdf> [[<pdf>] ..]
+  Usage:
+    pdfmeta <options> <pdf> [[<pdf>] ..]
 
-Options:
-  -h | --help               This message
-  -k | --keywords           Comma seperated list of keywords
-  -s | --subject            Define the PDFs subject
-  -t | --title              Define the PDFs title
-  -c | --creator            Define the PDFs creator program or library
-  -p | --producer           Define the PDFs producing program
-  -C | --creation-date      Set the creation date of the PDF
-  -M | --modification-date  Set the modification date of the PDF
+    Options:
+      -h | --help               This message
+      -k | --keywords           Comma seperated list of keywords
+      -s | --subject            Define the PDFs subject
+      -t | --title              Define the PDFs title
+      -c | --creator            Define the PDFs creator program or library
+      -p | --producer           Define the PDFs producing program
+      -C | --creation-date      Set the creation date of the PDF
+      -M | --modification-date  Set the modification date of the PDF
+      -V | --version            Display version and exit
 ----
 
 [[pdfmeta-examples]]
@@ -205,9 +209,10 @@ Requires:: bash, ghostscript
 === Usage
 
 ----
+  Usage: 
+    pdfresize [-q pdfsettings] -i <input> -o <output>
 
-  Usage: pdfresize [-q pdfsettings] -i <input> -o <output>
-
+  Options:
     -h | --help              This message
     -i | --input <input>     A PDF file preferably of high resolution
     -o | --output <output>   Name of the PDF file to save the result to
@@ -221,7 +226,6 @@ Requires:: bash, ghostscript
     printer  - comparable to "Print Optimized" in Acrobat Distiller
     prepress - comparable to "Prepress Optimized" in Acrobat Distiller
     default  - intended to be useful across a wide variety of uses
-
 ----
 
 [[pdfresize-examples]]
