@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.1
+declare -r VERSION=0.1.2
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -g IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
@@ -86,13 +86,8 @@ function usage() {
     -o  | --output <name>  Write the output to specified file <name>.
     -r  | --rotate <value> Rotate the image by <value>
                            Where value can be a positive or negative integer
-			                     between 0 and 360.
-    -V  | --on version() {
-  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
-    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
-  exit 0
-}
-ion        Display version and exit
+                           between 0 and 360.
+    -V  | --version        Display version and exit
 
 USAGE
   exit ${exit_code}
