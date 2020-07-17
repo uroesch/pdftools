@@ -46,7 +46,7 @@ function pdfcat_check_compatibility() {
 # ------------------------------------------------------------------------------
 
 function pdfcat_usage() {
-  local exit_code=$1; shift;
+  local exit_code=${1:-1}; shift;
   echo "  Usage:"
   echo "    ${PDFCAT_SCRIPT} <pdf> <pdf> [..]"
   echo ""
@@ -56,7 +56,7 @@ function pdfcat_usage() {
 # ------------------------------------------------------------------------------
 
 function pdfcat_fetch_meta() {
-  local file="$1"; shift;
+  local file="${1}"; shift;
   pdftk "${file}" dump_data_utf8 output - | grep ^Info
 }
 
@@ -71,7 +71,7 @@ function pdfcat_concat_pdf() {
 # ------------------------------------------------------------------------------
 
 function pdfcat_write_meta() {
-  local meta="$1"; shift;
+  local meta="${1}"; shift;
   pdftk - update_info_utf8 <( echo "${meta}" ) output -
 }
 
