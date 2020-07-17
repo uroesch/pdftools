@@ -59,8 +59,19 @@ asciidoctor_dependencies:
 	done
 	@echo $(DIVIDER)
 
+asciidoctor_dependencies:
+	@echo "Install asciidoctor dependencies $(ASCIIDOCTOR_DEPENDENCIES)"
+	for pkg in $(ASCIIDOCTOR_DEPENDENCIES); do
+		if dpkg -l $${pkg} &>/dev/null; then
+			echo "Package $${pkg} already installed"
+		else
+			sudo apt -y install $${pkg}
+		fi
+	done
+	@echo $(DIVIDER)
+
 deb_dependencies:
-	@echo "Install build dependencies $(DEB_DEPENDENCIES)"
+	@echo "Install debian build dependencies $(DEB_DEPENDENCIES)"
 	for pkg in $(DEB_DEPENDENCIES); do
 		if dpkg -l $${pkg} &>/dev/null; then
 			echo "Package $${pkg} already installed"
