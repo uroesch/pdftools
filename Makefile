@@ -12,13 +12,14 @@ MAKEFLAGS += --no-builtin-rules
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-DIVIDER       := $$(printf "%0.1s" -{1..80})
-OS_FAMILY     := $(shell lsb_release -i -s | tr "A-Z" "a-z")
-OS_RELEASE    := $(shell lsb_release -r -s)
-OS_NAME       := $(OS_FAMILY)_$(OS_RELEASE)
-USER_BIN      := $(HOME)/bin
-REPO_NAME     := $(shell basename $(CURDIR))
-BASH_VERSIONS := 4.0 4.1 4.2 4.3 4.4 5.0 5.1 5.2-rc
+DIVIDER          t:= $$(printf "%0.1s" -{1..80})
+OS_FAMILY        := $(shell lsb_release -i -s | tr "A-Z" "a-z")
+OS_RELEASE       := $(shell lsb_release -r -s)
+OS_NAME          := $(OS_FAMILY)_$(OS_RELEASE)
+USER_BIN         := $(HOME)/bin
+REPO_NAME        := $(shell basename $(CURDIR))
+BASH_VERSIONS    := 4.0 4.1 4.2 4.3 4.4 5.0 5.1 5.2-rc
+DEB_DEPENDENCIES := debhelper dpkg-dev
 
 # -----------------------------------------------------------------------------
 # Contidionally assigned globals
@@ -56,6 +57,22 @@ asciidoctor_dependencies:
 			;;
 		esac
 	done
+	@echo $(DIVIDER)
+
+deb_dependencies:
+	@echo "Install build dependencies $(DEB_DEPENDENCIES)"
+	for pkg in $(DEB_DEPENDENCIES); do
+		if dpkg -l $${pkg} &>/dev/null; then
+			echo "Package $${pkg} already installed"
+		else
+			sudo apt -y install $${pkg}
+		fi
+	done
+	@echo $(DIVIDER)
+
+deb: deb_dependencies
+	@echo "Build debian package"
+	dpkg-buildpackage --unsigned-changes --unsigned-source --root-command=fakeroot
 	@echo $(DIVIDER)
 
 docs/README.html: README.adoc
