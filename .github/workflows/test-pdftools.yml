@@ -14,7 +14,7 @@ on:
     - master
 
 jobs:
-  build-package:
+  test-pdftools:
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
