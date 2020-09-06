@@ -24,7 +24,7 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.2
+declare -r VERSION=0.2.3
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -a PDF_FILES=()
@@ -173,7 +173,7 @@ function merge_pdf() {
   if [[ ${#documents[@]} -eq 1 ]]; then
     mv "${documents[0]}" "${filename}" 2>/dev/null
   else
-    concat_pdf "${documents[@]}" > "${filename}.${EXTENSION}" &&
+    pdfcat::concat_pdf "${documents[@]}" > "${filename}.${EXTENSION}" &&
       rm "${documents[@]}" 2>/dev/null
   fi
 }
