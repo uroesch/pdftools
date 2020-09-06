@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+set -x
+
+# -----------------------------------------------------------------------------
+# Setup
+# -----------------------------------------------------------------------------
+set -o errexit
+set -o nounset
+set -o pipefail
+
+trap test::final_message EXIT
+
+# -----------------------------------------------------------------------------
+# Globals
+# -----------------------------------------------------------------------------
+declare -r TEST_SCRIPT=${0##*/}
+declare -r BIN_DIR=$(readlink -f $(dirname ${0})/../bin)
+declare -r WORK_DIR="$(dirname ${0})/.."
+declare -r TEMP_DIR=${HOME}/tmp
+declare -r PREFIX_DIR=pdftools-
+declare -r BASE_DIR=${TEMP_DIR}/${PREFIX_DIR}${RANDOM}
+declare -r DELIMITER=$(printf "%0.1s" -{1..80})
+declare    FINAL_MESSAGE=true
+declare    SAMPLE_PDF=${BASE_DIR}/lorem-ipsum.pdf
+
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+function usage() {
+  local exit_code=${1:-1}
+  FINAL_MESSAGE=false
+  cat <<USAGE
+
+  Usage:
+    ${TEST_SCRIPT} [options]
+
+  Options:
+    -c | --clean   Cleanup previous test directories
+    -h | --help    This message
+
+USAGE
+  exit ${exit_code}
+}
+
+function parse_options() {
+  (( ${#} == 0 )) && return 0
+  while (( ${#} > 0 )); do
+    case ${1} in
+    -c|--clean) test::clean;;
+    -h|--help)  usage 0;;
+    *)          usage 0;;
+    esac
+    shift
+  done
+}
+
+function test::clean() {
+  local dirs=$(find ${TEMP_DIR} -maxdepth 1 -type d -name "${PREFIX_DIR}*")
+  for dir in ${dirs}; do
+    echo "Removing directory '${dir}'"
+    rm -rf ${dir}
+  done
+  FINAL_MESSAGE=false
+  exit 0
+}
+
+function test::setup() {
+  # set path to repository directory
+  export PATH=${BIN_DIR}:${PATH}
+  [[ ! -d ${BASE_DIR} ]] && mkdir -p ${BASE_DIR}
+}
+
+function test::final_message() {
+  local exit_code=$?
+  [[ ${FINAL_MESSAGE} != true ]] && return 0
+  if (( ${exit_code} > 0 )); then
+    echo -e "\e[31m"
+    echo ${DELIMITER}
+    echo There were errors while executing the test suite
+    echo ${DELIMITER}
+    echo -e "\e[0m"
+  else
+    echo -e "\e[32m"
+    echo ${DELIMITER}
+    echo All tests passed
+    echo ${DELIMITER}
+    echo -e "\e[0m"
+  fi
+  exit ${exit_code}
+}
+
+function test::is_pdf() {
+  local pdf=${1}
+  file ${pdf} | grep -q 'PDF document'
+}
+
+function test::download_pdf() {
+  local url='https://tools.wmflabs.org/wsexport/tool/book.php'
+  local query_string='lang=la&format=pdf-a4&page=Lorem_ipsum'
+  curl \
+    --location \
+    --silent \
+    --output ${SAMPLE_PDF} \
+    "${url}?${query_string}"
+}
+
+function test::pdf_to_images() {
+  pdftocairo \
+   -jpeg \
+   ${SAMPLE_PDF} \
+   ${BASE_DIR}/sample-image
+}
+
+function test::img2pdf() {
+  img2pdf \
+    --output ${BASE_DIR}/img2pdf.pdf \
+    $(find ${BASE_DIR} -type f -name "*jpg")
+}
+
+function test::verify_img2pdf() {
+  test::is_pdf ${BASE_DIR}/img2pdf.pdf
+}
+
+function test::ocrpdf() {
+  cp ${BASE_DIR}/img2pdf.pdf ${BASE_DIR}/ocrpdf.pdf
+  ocrpdf ${BASE_DIR}/ocrpdf.pdf
+}
+
+function test::verify_ocrpdf() {
+  local count=0
+  test::is_pdf ${BASE_DIR}/ocrpdf.pdf
+  pdftotext ${BASE_DIR}/ocrpdf.pdf
+  count=$(grep -c "Lorem ipsum" ${BASE_DIR}/ocrpdf.txt)
+  (( count == 10 ))
+}
+
+function test::pdfresize() {
+  pdfresize \
+    --quality screen \
+    --input ${BASE_DIR}/img2pdf.pdf \
+    --output ${BASE_DIR}/pdfresize.pdf
+}
+
+function test::verify_pdfresize() {
+  test::is_pdf ${BASE_DIR}/pdfresize.pdf
+  local size_before=$(du -k ${BASE_DIR}/img2pdf.pdf | cut -f 1 )
+  local size_after=$(du -k ${BASE_DIR}/pdfresize.pdf | cut -f 1 )
+  (( size_before > size_after ))
+}
+
+function test::pdf2pdfa() {
+  pdf2pdfa ${BASE_DIR}/img2pdf.pdf
+  mv ${BASE_DIR}/img2pdf_a.pdf ${BASE_DIR}/pdf2pdfa.pdf
+}
+
+function test::verify_pdf2pdfa() {
+  # no tool present to verify if PDF/A
+  test::is_pdf ${BASE_DIR}/pdf2pdfa.pdf
+}
+
+function test::pdfmeta() {
+  cp ${BASE_DIR}/img2pdf.pdf ${BASE_DIR}/pdfmeta.pdf
+  pdfmeta \
+    --creator "pdfmeta-$$" \
+    ${BASE_DIR}/pdfmeta.pdf
+}
+
+function test::verify_pdfmeta() {
+  test::is_pdf ${BASE_DIR}/pdfmeta.pdf
+  pdfinfo ${BASE_DIR}/pdfmeta.pdf | grep -q -E "Creator:.*pdfmeta-$$" 
+}
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+parse_options "${@}"
+test::setup
+test::download_pdf
+test::pdf_to_images
+test::img2pdf
+test::verify_img2pdf
+test::ocrpdf
+test::verify_ocrpdf
+test::pdfresize
+test::verify_pdfresize
+test::pdf2pdfa
+test::verify_pdf2pdfa
+test::pdfmeta
+test::verify_pdfmeta

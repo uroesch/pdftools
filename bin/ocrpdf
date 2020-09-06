@@ -24,10 +24,11 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.3
+declare -r VERSION=0.3.0
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -a PDF_FILES=()
+declare    EXTENSION=pdf
 declare -a INCLUDES=(
   pdfcat
 )
@@ -137,13 +138,13 @@ function check_compatibility() {
 # ------------------------------------------------------------------------------
 
 function ocr_pdfs() {
-  for file in "${PDF_FILES[@]}"; do
+  for file in "${PDF_FILES[@]:1}"; do
     if ! check_compatibility "${file}"; then
       echo "${file} is not compatible; skipping!"
       continue
     fi
     workname="$$-${RANDOM}"
-    meta="$(fetch_meta "${file}")"
+    meta="$(pdfcat::fetch_meta "${file}")"
     pdfimages -all "${file}" "${workname}" 2>/dev/null &&
     for image in ${workname}*; do
       run_ocr ${image}
@@ -158,7 +159,7 @@ function post_process_pdf() {
   local file="${1}"; shift;
   local workname="${1}"; shift;
   local meta="${1}"; shift;
-  merge_pdf "${workname}.pdf" ${workname}*
+  merge_pdf "${workname}.${EXTENSION}" ${workname}*
   pdftk "${workname}.pdf" \
     update_info_utf8 <( echo "${meta}" ) \
     output "${file}" 2>/dev/null
@@ -173,7 +174,7 @@ function merge_pdf() {
   if [[ ${#documents[@]} -eq 1 ]]; then
     mv "${documents[0]}" "${filename}" 2>/dev/null
   else
-    pdfcat::concat_pdf "${documents[@]}" > "${filename}.${EXTENSION}" &&
+    pdfcat::concat_pdf "${documents[@]}" > "${filename}" &&
       rm "${documents[@]}" 2>/dev/null
   fi
 }
@@ -187,7 +188,7 @@ function parse_options() {
     -V|--version) version;;
     -l|--lang)    shift; OCR_LANG=${1};;
     -h|--help)    usage 0;;
-    *)            PDF_FILES=( "${PDF_FILES[@]}" "${1}" );;
+    *)            PDF_FILES=( "${PDF_FILES[@]:-}" "${1}" );;
     esac
     shift
   done

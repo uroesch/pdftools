@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------------
-# Test dependencies for pdftools
+# Test pdftools
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.0 
+# Version: 0.2.0 
 # -----------------------------------------------------------------------------
-name: test-dependencies
+name: test-pdftools
 
 on:
   push:
@@ -42,17 +42,18 @@ jobs:
       run: >
         sudo apt-get -y install imagemagick tesseract-ocr poppler-utils ghostscript 
 
+    - name: Adjust ImageMagick configuration
+      shell: bash
+      run: > 
+        test -f /etc/ImageMagick-6/policy.xml &&
+        sudo sed -i '/pattern="PDF"/s/rights="none"/rights="read\|write"/'
+        /etc/ImageMagick-6/policy.xml
+        
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Check dependencies 
+    - name: Test pdftools functionality
       shell: bash
       run: |
         export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
-        echo ${PATH}
-        for script in bin/*; do
-          [[ ${script} =~ pdfcat ]] && continue
-          echo "Tesing dependencies for '${script}'"
-          ${script} --version
-          echo ""
-        done 
+        bash -x test/test-pdftools

@@ -121,7 +121,7 @@ function parse_options() {
     -h|--help) usage 0;;
     -V|--version) version;;
     -*) usage 1;;
-    *) PDF_FILES=( "${PDF_FILES[@]}" "${1}" );;
+    *) PDF_FILES=( "${PDF_FILES[@]:-}" "${1}" );;
     esac
     shift
   done
