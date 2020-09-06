@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.1
+declare -r PDFCAT_VERSION=0.2
 declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r PDFCAT_SCRIPT=${0##*/}
 declare -r ARGUMENTS=$#
@@ -31,7 +31,7 @@ function pdftk_major() {
 
 # ------------------------------------------------------------------------------
 
-function pdfcat_check_compatibility() {
+function pdfcat::check_compatibility() {
   if ! which pdftk &>/dev/null; then
     echo "Required binary 'pdftk' was not found on this system" 1&>2
     exit 127
@@ -45,7 +45,7 @@ function pdfcat_check_compatibility() {
 
 # ------------------------------------------------------------------------------
 
-function pdfcat_usage() {
+function pdfcat::usage() {
   local exit_code=$1; shift;
   echo "  Usage:"
   echo "    ${PDFCAT_SCRIPT} <pdf> <pdf> [..]"
@@ -55,22 +55,22 @@ function pdfcat_usage() {
 
 # ------------------------------------------------------------------------------
 
-function pdfcat_fetch_meta() {
+function pdfcat::fetch_meta() {
   local file="$1"; shift;
   pdftk "${file}" dump_data_utf8 output - | grep ^Info
 }
 
 # ------------------------------------------------------------------------------
 
-function pdfcat_concat_pdf() {
+function pdfcat::concat_pdf() {
   [[ $# -eq 0 ]] && return
-  local meta=$( pdfcat_fetch_meta "$1" )
-  pdftk "$@" cat output - | pdfcat_write_meta "${meta}" 2>/dev/null
+  local meta=$( pdfcat::fetch_meta "$1" )
+  pdftk "$@" cat output - | pdfcat::write_meta "${meta}" 2>/dev/null
 }
 
 # ------------------------------------------------------------------------------
 
-function pdfcat_write_meta() {
+function pdfcat::write_meta() {
   local meta="$1"; shift;
   pdftk - update_info_utf8 <( echo "${meta}" ) output -
 }
@@ -78,10 +78,10 @@ function pdfcat_write_meta() {
 # ------------------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------------------
-pdfcat_check_compatibility
+pdfcat::check_compatibility
 
 if [[ $0 == ${BASH_SOURCE} && ${ARGUMENTS} -lt 2 ]]; then
-  pdfcat_usage 1;
+  pdfcat::usage 1;
 fi
 
-pdfcat_concat_pdf "$@"
+pdfcat::concat_pdf "$@"

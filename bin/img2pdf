@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.2
+declare -r VERSION=0.1.3
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -g IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
@@ -152,7 +152,7 @@ function create_pdf() {
     pdfs=( "${pdfs[@]-}" "${pdf}" )
   done
   [[ -z ${OUTPUT} ]] && return 0
-  concat_pdf "${pdfs[@]:1}" > "$$-${dest}"
+  pdfcat::concat_pdf "${pdfs[@]:1}" > "$$-${dest}"
   rm "${pdfs[@]:1}" 2>/dev/null
   mv "$$-${dest}" "${dest%.*}.pdf"
 }
