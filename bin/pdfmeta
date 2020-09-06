@@ -119,7 +119,7 @@ function parse_options() {
     -M|--modification-date) shift; META[ModDate]="$1";;
     -h|--help)              usage 0;;
     -V|--version)           version;;
-    *) FILES=( "${FILES[@]}" "$1")
+    *) FILES=( "${FILES[@]:-}" "$1")
     esac
     shift
   done
@@ -184,6 +184,6 @@ function update_meta() {
 check_compatibility
 parse_options "$@"
 check_input
-for file in "${FILES[@]}"; do
+for file in "${FILES[@]:1}"; do
   update_meta "${file}"
 done
