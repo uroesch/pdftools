@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # -----------------------------------------------------------------------------
 # A wrapper script around `pdftk` to manipulate a PDFs meta data
@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.2
+declare -r VERSION=0.1.3
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r PRODUCER="${SCRIPT} ${VERSION}"
