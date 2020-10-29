@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #------------------------------------------------------------------------------
 # A wrapper aroung ghostscript to reduce the size of a scanned document
@@ -20,7 +20,7 @@ set -o pipefail
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-declare -r VERSION=0.0.3
+declare -r VERSION=0.0.4
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r SCRIPT=${0##*/}

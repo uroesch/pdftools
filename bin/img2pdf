@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ------------------------------------------------------------------------------
 # A script to convert PNG, TIFF or JPEG to PDF files. 
@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.0
+declare -r VERSION=0.2.1
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -g IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
