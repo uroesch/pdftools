@@ -14,7 +14,7 @@ on:
     - master
 
 jobs:
-  build-package:
+  create-docs:
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
