@@ -21,13 +21,13 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.3
+declare -r VERSION=0.1.2
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r PRODUCER="${SCRIPT} ${VERSION}"
 declare -r REQUIRE_BASH=4
 declare -r REQUIRE_PDFTK=2
-declare -a FILES
+declare -a FILES=()
 declare -A META
 
 # -----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ function parse_options() {
     -M|--modification-date) shift; META[ModDate]="$1";;
     -h|--help)              usage 0;;
     -V|--version)           version;;
-    *) FILES=( "${FILES[@]:-}" "$1")
+    *)                      FILES+=( "$1")
     esac
     shift
   done
@@ -184,6 +184,6 @@ function update_meta() {
 check_compatibility
 parse_options "$@"
 check_input
-for file in "${FILES[@]:1}"; do
+for file in "${FILES[@]}"; do
   update_meta "${file}"
 done

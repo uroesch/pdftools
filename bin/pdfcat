@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.2.1
+declare -r PDFCAT_VERSION=0.2
 declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r PDFCAT_SCRIPT=${0##*/}
 declare -r ARGUMENTS=$#
