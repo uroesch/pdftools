@@ -128,11 +128,10 @@ function parse_options() {
     -r|--rotate)  shift; IMAGE_ROTATE=$1;;
     -o|--output)  shift; OUTPUT=$1; PDF_PREFIX="$$-${RANDOM}-";;
     -V|--version) version;;
-    *)            IMAGES=( "${IMAGES[@]-}" "$1" );;
+    *)            IMAGES+=( "$1" );;
     esac
     shift
   done
-  IMAGES=( "${IMAGES[@]:1}" )
 }
 
 # ------------------------------------------------------------------------------

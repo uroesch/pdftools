@@ -23,7 +23,7 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0#*/}
-declare -r VERSION=0.1.0
+declare -r VERSION=0.1.1
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -g SUFFIX=_a
@@ -121,7 +121,7 @@ function parse_options() {
     -h|--help) usage 0;;
     -V|--version) version;;
     -*) usage 1;;
-    *) PDF_FILES=( "${PDF_FILES[@]:-}" "${1}" );;
+    *) PDF_FILES+=( "${1}" );;
     esac
     shift
   done

@@ -24,7 +24,7 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.3.0
+declare -r VERSION=0.3.1
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -a PDF_FILES=()
@@ -138,7 +138,7 @@ function check_compatibility() {
 # ------------------------------------------------------------------------------
 
 function ocr_pdfs() {
-  for file in "${PDF_FILES[@]:1}"; do
+  for file in "${PDF_FILES[@]}"; do
     if ! check_compatibility "${file}"; then
       echo "${file} is not compatible; skipping!"
       continue
@@ -188,7 +188,7 @@ function parse_options() {
     -V|--version) version;;
     -l|--lang)    shift; OCR_LANG=${1};;
     -h|--help)    usage 0;;
-    *)            PDF_FILES=( "${PDF_FILES[@]:-}" "${1}" );;
+    *)            PDF_FILES+=( "${1}" );;
     esac
     shift
   done
