@@ -167,12 +167,14 @@ function test::pdfmeta() {
 
 function test::verify_pdfmeta() {
   test::is_pdf ${BASE_DIR}/pdfmeta.pdf
-  pdfinfo ${BASE_DIR}/pdfmeta.pdf | grep -q -E "Creator:.*pdfmeta-$$" 
+  # for some yet unknown reason `grep -q` croaks on alpine
+  # hence the redirect to /dev/null
+  pdfinfo ${BASE_DIR}/pdfmeta.pdf | grep -E "Creator:.*pdfmeta-$$" &>/dev/null
 }
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
-parse_options "${@}"
+parse_options "$@"
 test::setup
 test::download_pdf
 test::pdf_to_images
