@@ -26,7 +26,7 @@ declare -r SCRIPT=${0#*/}
 declare -r VERSION=0.1.1
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
-declare -g SUFFIX=_a
+declare    SUFFIX=_a
 declare -a PDF_FILES=()
 declare -a DEPENDENCIES=(
   gs

@@ -14,14 +14,16 @@ trap test::final_message EXIT
 # Globals
 # -----------------------------------------------------------------------------
 declare -r TEST_SCRIPT=${0##*/}
-declare -r BIN_DIR=$(readlink -f $(dirname ${0})/../bin)
+declare -r TEST_DIR=$(readlink -f $(dirname ${0}))
+declare -r TEST_PDF=lorem-ipsum.pdf
+declare -r BIN_DIR=$(readlink -f ${TEST_DIR}/../bin)
 declare -r WORK_DIR="$(dirname ${0})/.."
 declare -r TEMP_DIR=${HOME}/tmp
 declare -r PREFIX_DIR=pdftools-
 declare -r BASE_DIR=${TEMP_DIR}/${PREFIX_DIR}${RANDOM}
 declare -r DELIMITER=$(printf "%0.1s" -{1..80})
 declare    FINAL_MESSAGE=true
-declare    SAMPLE_PDF=${BASE_DIR}/lorem-ipsum.pdf
+declare    SAMPLE_PDF=${BASE_DIR}/${TEST_PDF}
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -94,14 +96,8 @@ function test::is_pdf() {
   file ${pdf} | grep -q 'PDF document'
 }
 
-function test::download_pdf() {
-  local url='https://tools.wmflabs.org/wsexport/tool/book.php'
-  local query_string='lang=la&format=pdf-a4&page=Lorem_ipsum'
-  curl \
-    --location \
-    --silent \
-    --output ${SAMPLE_PDF} \
-    "${url}?${query_string}"
+function test::copy_sample_pdf() {
+  cp ${TEST_DIR}/${TEST_PDF} ${SAMPLE_PDF}
 }
 
 function test::pdf_to_images() {
@@ -176,7 +172,7 @@ function test::verify_pdfmeta() {
 # -----------------------------------------------------------------------------
 parse_options "$@"
 test::setup
-test::download_pdf
+test::copy_sample_pdf
 test::pdf_to_images
 test::img2pdf
 test::verify_img2pdf
