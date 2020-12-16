@@ -24,9 +24,9 @@ declare -r VERSION=0.0.4
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r SCRIPT=${0##*/}
-declare -g SETTINGS=default
-declare -g INPUT=""
-declare -g OUTPUT=""
+declare    SETTINGS=default
+declare    INPUT=""
+declare    OUTPUT=""
 declare -a DEPENDENCIES=( gs )
 declare -a KEYWORDS=(
   default

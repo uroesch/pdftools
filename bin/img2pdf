@@ -21,15 +21,15 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.1
+declare -r VERSION=0.2.2
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
-declare -g IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
-declare -g IMAGE_QUALITY=${IMAGE_QUALITY:-90}
-declare -g IMAGE_ROTATE=""
-declare -g PDF_PREFIX=""
-declare -g OUTPUT=""
-declare -g DELETE_IMAGES=false
+declare    IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
+declare    IMAGE_QUALITY=${IMAGE_QUALITY:-90}
+declare    IMAGE_ROTATE=""
+declare    PDF_PREFIX=""
+declare    OUTPUT=""
+declare    DELETE_IMAGES=false
 declare -a IMAGES=()
 declare -a DEPENDENCIES=(
   identify
