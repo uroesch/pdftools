@@ -4,19 +4,20 @@
 :firstname: Urs
 :lastname:  Roesch
 :email:     github@bun.ch
-:revnumber: 0.7.0
+:revnumber: 0.7.1
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
   tesseract, OCR
 :!toc:
 
-A collection of PDF command line tools and wrappers for Linux.
+A collection of PDF command line tools and wrappers for Linux written in Bash
+Shell script.
 
 
 [[installation]]
 == Installation instructions
 
 The scripts are meant to be installed in a users' home directory. To do this
-quickly the `Makefile` in the root of the repository has a target called 
+quickly the `Makefile` in the root of the repository has a target called
 `user_install`.
 
 [source,console]
@@ -363,7 +364,7 @@ scan2jpg
 ----
 
 [[scan2pdf-usage]]
-=== Usage 
+=== Usage
 
 [source,console]
 ----
