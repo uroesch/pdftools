@@ -33,6 +33,7 @@ jobs:
         - '4.3'
         - '4.4'
         - '5.0'
+        - '5.1'
 
     steps:
     - name: Checkout repository
