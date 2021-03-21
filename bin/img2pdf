@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.2
+declare -r VERSION=0.2.3
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare    IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
@@ -138,7 +138,7 @@ function parse_options() {
 
 function temporary_pdf() {
   local image=${1}; shift
-  local path=${image%/*}
+  local path=$([[ $image != ${image%/*} ]] && echo ${image%/*})
   local basename=${image##*/}
   echo "${path:-.}/${PDF_PREFIX}${basename%.*}.pdf"
 }
