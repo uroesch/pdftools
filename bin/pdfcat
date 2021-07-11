@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.2.1
+declare -r PDFCAT_VERSION=0.2.2
 declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r PDFCAT_SCRIPT=${0##*/}
 declare -r ARGUMENTS=$#
@@ -47,10 +47,12 @@ function pdfcat::check_compatibility() {
 
 function pdfcat::usage() {
   local exit_code=$1; shift;
-  echo "  Usage:"
-  echo "    ${PDFCAT_SCRIPT} <pdf> <pdf> [..]"
-  echo ""
-  exit ${exit_code}
+  { 
+    echo "  Usage:";
+    echo "    ${PDFCAT_SCRIPT} <pdf> <pdf> [..]";
+    echo "";
+    exit ${exit_code};
+  } 1>&2
 }
 
 # ------------------------------------------------------------------------------
