@@ -118,10 +118,10 @@ function check_image() {
 # ------------------------------------------------------------------------------
 
 function parse_options() {
-  if [ $# -lt 1 ]; then
+  if (( $# < 1 )); then
      usage 1
   fi
-  while [ $# -gt 0 ]; do
+  while (( $# > 0 )); do
     case $1 in
     -h|--help)    usage 0;;
     -d|--delete)  DELETE_IMAGES=true;;
