@@ -20,7 +20,7 @@ set -o pipefail
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-declare -r VERSION=0.0.4
+declare -r VERSION=0.0.5
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r SCRIPT=${0##*/}
@@ -42,7 +42,7 @@ declare -a KEYWORDS=(
 
 function check_dependencies() {
   for dependency in ${DEPENDENCIES[*]}; do
-    if ! which ${dependency} >/dev/null 2>&1; then
+    if ! command -v ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
       echo "Please install first!" 1>&2
       exit 64

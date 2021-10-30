@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.2.2
+declare -r PDFCAT_VERSION=0.2.3
 declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r PDFCAT_SCRIPT=${0##*/}
 declare -r ARGUMENTS=$#
@@ -32,7 +32,7 @@ function pdftk_major() {
 # ------------------------------------------------------------------------------
 
 function pdfcat::check_compatibility() {
-  if ! which pdftk &>/dev/null; then
+  if ! command -v pdftk &>/dev/null; then
     echo "Required binary 'pdftk' was not found on this system" 1&>2
     exit 127
   else

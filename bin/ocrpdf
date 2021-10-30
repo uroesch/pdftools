@@ -24,7 +24,7 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.3.1
+declare -r VERSION=0.3.2
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -a PDF_FILES=()
@@ -45,7 +45,7 @@ declare -a DEPENDENCIES=(
 
 function check_dependencies() {
   for dependency in ${DEPENDENCIES[@]}; do
-    if ! which ${dependency} >/dev/null 2>&1; then
+    if ! command -v ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
       echo "Please install first!" 1>&2
       exit 64
@@ -57,7 +57,7 @@ function check_dependencies() {
 
 function source_includes() {
   for include in ${INCLUDES[@]}; do
-    local path=$( which ${include} 2>/dev/null )
+    local path=$(command -v ${include} 2>/dev/null)
     [[ -n ${path} ]] && source ${path}
   done
 }
