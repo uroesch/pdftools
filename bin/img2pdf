@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.2.3
+declare -r VERSION=0.2.4
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare    IMAGE_COMPRESSION=${PDF_IMAGE:-jpeg}
@@ -46,7 +46,7 @@ declare -a INCLUDES=(
 
 function check_dependencies() {
   for dependency in ${DEPENDENCIES[*]}; do
-    if ! which ${dependency} >/dev/null 2>&1; then
+    if ! command -v ${dependency} >/dev/null 2>&1; then
       echo "Missing dependency '${dependency}'" 1>&2
       echo "Please install first!" 1>&2
       exit 64
@@ -66,7 +66,7 @@ function version() {
 
 function source_includes() {
   for include in ${INCLUDES[*]}; do
-    local path=$( which ${include} 2>/dev/null )
+    local path=$(command -v ${include} 2>/dev/null)
     [[ -n ${path} ]] && source ${path}
   done
 }

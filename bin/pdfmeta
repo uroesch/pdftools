@@ -21,7 +21,7 @@ set -o pipefail
 # Globals
 # -----------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.1.4
+declare -r VERSION=0.1.5
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -r PRODUCER="${SCRIPT} ${VERSION}"
@@ -85,7 +85,7 @@ function check_compatibility() {
     echo "Bash version ${REQUIRE_BASH} or higher is required!" 1&>2
     exit 128
   fi
-  if ! which pdftk &>/dev/null; then
+  if ! command -v pdftk &>/dev/null; then
     echo "Required binary 'pdftk' was not found on this system" 1&>2
     exit 127
   else
