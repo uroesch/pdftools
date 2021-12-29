@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.2.3
+declare -r PDFCAT_VERSION=0.2.4
 declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r PDFCAT_SCRIPT=${0##*/}
 declare -r ARGUMENTS=$#
@@ -59,7 +59,7 @@ function pdfcat::usage() {
 
 function pdfcat::fetch_meta() {
   local file="$1"; shift;
-  pdftk "${file}" dump_data_utf8 output - | grep ^Info
+  pdftk "${file}" dump_data_utf8 output - | grep ^Info 2>/dev/null
 }
 
 # ------------------------------------------------------------------------------
