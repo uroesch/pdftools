@@ -55,6 +55,22 @@ function parse_options() {
   done
 }
 
+function ::message() {
+  local message=${1}; shift;
+  printf "%-50s" "${message}"
+}
+
+function ::result() {
+  local exit_code=${1}; shift
+  local result
+  local code
+  case ${exit_code} in
+  0) code=32; result="SUCCESS";;
+  *) code=31; result="FAILURE";;
+  esac
+  printf "%b[ %s ]%b\n" "\e[${code}m" ${result} "\e[0m"
+}
+
 function test::clean() {
   local dirs=$(find ${TEMP_DIR} -maxdepth 1 -type d -name "${PREFIX_DIR}*")
   for dir in ${dirs}; do
@@ -73,98 +89,116 @@ function test::setup() {
 
 function test::final_message() {
   local exit_code=$?
+  local format="%b${DELIMITER}\n%s\n${DELIMITER}%b\n"
   [[ ${FINAL_MESSAGE} != true ]] && return 0
   if (( ${exit_code} > 0 )); then
-    echo -e "\e[31m"
-    echo ${DELIMITER}
-    echo There were errors while executing the test suite
-    echo ${DELIMITER}
-    echo -e "\e[0m"
+    printf "${format}" \
+      "\e[31m" "There were errors while executing the test suite" "\e[0m"
   else
-    echo -e "\e[32m"
-    echo ${DELIMITER}
-    echo All tests passed
-    echo ${DELIMITER}
-    echo -e "\e[0m"
+    printf "${format}" "\e[32m" "All test passed" "\e[0m"
   fi
   exit ${exit_code}
 }
 
 function test::is_pdf() {
   local pdf=${1}
-  file ${pdf} | grep -q 'PDF document'
+  file ${pdf} | grep -q 'PDF document' 2>/dev/null
 }
 
 function test::copy_sample_pdf() {
+  ::message "Test copy sample pdf"
   cp ${TEST_DIR}/${TEST_PDF} ${SAMPLE_PDF}
+  ::result $?
 }
 
 function test::pdf_to_images() {
+  ::message "Test pdf to images"
   pdftocairo \
    -jpeg \
    ${SAMPLE_PDF} \
    ${BASE_DIR}/sample-image
+  ::result $?
 }
 
 function test::img2pdf() {
+  ::message "Test img2pdf"
   img2pdf \
     --output ${BASE_DIR}/img2pdf.pdf \
     $(find ${BASE_DIR} -type f -name "*jpg")
+  ::result $?
 }
 
 function test::verify_img2pdf() {
+  ::message "Test verify img2pdf"
   test::is_pdf ${BASE_DIR}/img2pdf.pdf
+  ::result $?
 }
 
 function test::ocrpdf() {
+  ::message "Test ocrpdf"
   cp ${BASE_DIR}/img2pdf.pdf ${BASE_DIR}/ocrpdf.pdf
   ocrpdf ${BASE_DIR}/ocrpdf.pdf
+  ::result $?
 }
 
 function test::verify_ocrpdf() {
+  ::message "Test verify ocrpdf"
   local count=0
   test::is_pdf ${BASE_DIR}/ocrpdf.pdf
   pdftotext ${BASE_DIR}/ocrpdf.pdf
-  count=$(grep -c "Lorem ipsum" ${BASE_DIR}/ocrpdf.txt)
+  count=$(grep -c "Lorem ipsum" ${BASE_DIR}/ocrpdf.txt 2>/dev/null)
   (( count == 10 ))
+  ::result $?
 }
 
 function test::pdfresize() {
+  ::message "Test pdfresize"
   pdfresize \
     --quality screen \
     --input ${BASE_DIR}/img2pdf.pdf \
     --output ${BASE_DIR}/pdfresize.pdf
+  ::result $?
 }
 
 function test::verify_pdfresize() {
+  ::message "Test verify pdfresize"
   test::is_pdf ${BASE_DIR}/pdfresize.pdf
   local size_before=$(du -k ${BASE_DIR}/img2pdf.pdf | cut -f 1 )
   local size_after=$(du -k ${BASE_DIR}/pdfresize.pdf | cut -f 1 )
   (( size_before > size_after ))
+  ::result $?
 }
 
 function test::pdf2pdfa() {
+  ::message "Test pdf2pdfa"
   pdf2pdfa ${BASE_DIR}/img2pdf.pdf
   mv ${BASE_DIR}/img2pdf_a.pdf ${BASE_DIR}/pdf2pdfa.pdf
+  ::result $?
 }
 
 function test::verify_pdf2pdfa() {
+  ::message "Test verify pdf2pdfa"
   # no tool present to verify if PDF/A
   test::is_pdf ${BASE_DIR}/pdf2pdfa.pdf
+  ::result $?
 }
 
 function test::pdfmeta() {
+  ::message "Test pdfmeta"
   cp ${BASE_DIR}/img2pdf.pdf ${BASE_DIR}/pdfmeta.pdf
   pdfmeta \
     --creator "pdfmeta-$$" \
     ${BASE_DIR}/pdfmeta.pdf
+  ::result $?
 }
 
 function test::verify_pdfmeta() {
+  ::message "Test verify pdfmeta"
   test::is_pdf ${BASE_DIR}/pdfmeta.pdf
   # for some yet unknown reason `grep -q` croaks on alpine
   # hence the redirect to /dev/null
   pdfinfo ${BASE_DIR}/pdfmeta.pdf | grep -E "Creator:.*pdfmeta-$$" &>/dev/null
+  ::result $?
 }
 # -----------------------------------------------------------------------------
 # Main
