@@ -5,7 +5,8 @@
 :lastname:  Roesch
 :email:     github@bun.ch
 :revnumber: 0.7.0
-:keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, tesseract, OCR
+:keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
+  tesseract, OCR
 :!toc:
 
 A collection of PDF command line tools and wrappers for Linux
@@ -19,7 +20,7 @@ A script to convert PNGs, TIFFs or JPEGs to PDF files.
 License:: MIT
 Requires:: bash, pdfcat, ImageMagick, pdftk
 
-[[img2-usage]]
+[[img2pdf-usage]]
 === Usage
 
 ----
@@ -40,22 +41,22 @@ Requires:: bash, pdfcat, ImageMagick, pdftk
 [[img2pdf-examples]]
 === Examples
 
-.Create single page pdfs from images
+.Create single page PDFs from images
 ----
 img2pdf first.png second.jpg
 ----
 
-.Create single page pdfs from images and then delete the original images.
+.Create single page PDFs from images and then delete the original images.
 ----
 img2pdf --delete first.png second.jpg
 ----
 
-.Rotate the image 180 degress prior to creating the pdf
+.Rotate image 180 degrees prior to creating the PDF.
 ----
 img2pdf --rotate 180 myimage.png
 ----
 
-.Rotate the images by 180 degress and concatenate everyting into file `output.pdf`
+.Rotate images by 180 degrees and concatenate everything into file `output.pdf`
 ----
 img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 ----
@@ -102,7 +103,7 @@ Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
     the OCR process.
 ----
 
-[[ocrpdf-exmples]]
+[[ocrpdf-examples]]
 === Examples
 
 .Run OCR with all installed languages on a couple of PDFs
@@ -138,7 +139,7 @@ Requires:: bash, pdftk >= 2.0
 pdfcat <pdf> <pdf> [..]
 ----
 
-[[pdfcat-exmples]]
+[[pdfcat-examples]]
 === Examples
 
 .Merging two PDFs into a new one
@@ -146,7 +147,7 @@ pdfcat <pdf> <pdf> [..]
 pdfcat first.pdf  second.pdf > merged.pdf
 ----
 
-.Merging sequentially ordered pdfs into a single document
+.Merging sequentially ordered PDFs into a single document
 ----
 pdfcat myscan*.pdf > merged.pdf
 ----
@@ -170,7 +171,7 @@ Requires:: bash >= 4.0, pdftk >= 2.0
 
     Options:
       -h | --help               This message
-      -k | --keywords           Comma seperated list of keywords
+      -k | --keywords           Comma separated list of keywords
       -s | --subject            Define the PDFs subject
       -t | --title              Define the PDFs title
       -c | --creator            Define the PDFs creator program or library
@@ -198,7 +199,7 @@ pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
 [[pdfresize]]
 == pdfresize
 
-A wrapper aroung `ghostscript` to reduce the size of a scanned document
+A wrapper around `ghostscript` to reduce the size of a scanned document
 
 NOTE: pdfresize is very likely not working with PDF documents containing
 https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
@@ -210,7 +211,7 @@ Requires:: bash, ghostscript
 === Usage
 
 ----
-  Usage: 
+  Usage:
     pdfresize [-q pdfsettings] -i <input> -o <output>
 
   Options:
@@ -237,20 +238,20 @@ Requires:: bash, ghostscript
 pdresize --input input.pdf --output output.pdf
 ----
 
-.Resize to sreen resolution
+.Resize to screen resolution
 ----
 pdfresize --quality screen --input input.pdf --output output.pdf
 ----
 
 [[pdf2pdfa]]
-== pdf2pdfa 
+== pdf2pdfa
 
-Small script to convert a PDF to PDF/A type. 
+Small script to convert a PDF to PDF/A type.
 
 NOTE: This is early beta and all the meta data in the PDF will be lost!
 
 [[pdf2pdfa-usage]]
-== Usage 
+== Usage
 
 -----
   Usage:
@@ -262,7 +263,7 @@ NOTE: This is early beta and all the meta data in the PDF will be lost!
                             Default '_a'
 -----
 
-[[pdfresize-examples]]
+[[pdf2pdfa-examples]]
 === Examples
 
 .Convert a pdf file `sample.pdf` to a PDF/A called `sample_a.pdf`
@@ -274,3 +275,5 @@ pdf2pdfa sample.pdf
 ----
 pdf2pdfa --suffix _pdfa sample.pdf
 ----
+
+// vim: set colorcolumn=80 spell spelllang=en_us :
