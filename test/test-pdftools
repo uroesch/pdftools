@@ -137,7 +137,7 @@ function test::verify_img2pdf() {
 function test::ocrpdf() {
   ::message "Test ocrpdf"
   cp ${BASE_DIR}/img2pdf.pdf ${BASE_DIR}/ocrpdf.pdf
-  ocrpdf ${BASE_DIR}/ocrpdf.pdf
+  ocrpdf -q ${BASE_DIR}/ocrpdf.pdf
   ::result $?
 }
 
