@@ -84,6 +84,7 @@ Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
 
   Options:
     -h | --help         This message
+    -q | --quiet        Don't send display processed file names
     -V | --version      Print version information and exit
     -l | --lang <lang>  Set the OCR languages to use.
                         For multiple languages concatenate with a '+'

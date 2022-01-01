@@ -24,11 +24,12 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.3.2
+declare -r VERSION=0.4.0
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
+declare -- QUIET=
 declare -a PDF_FILES=()
-declare    EXTENSION=pdf
+declare -- EXTENSION=pdf
 declare -a INCLUDES=(
   pdfcat
 )
@@ -104,6 +105,7 @@ function usage() {
 
   Options:
     -h | --help         This message
+    -q | --quiet        Don't send display processed file names
     -V | --version      Print version information and exit
     -l | --lang <lang>  Set the OCR languages to use.
                         For multiple languages concatenate with a '+'
@@ -140,8 +142,10 @@ function check_compatibility() {
 function ocr_pdfs() {
   for file in "${PDF_FILES[@]}"; do
     if ! check_compatibility "${file}"; then
-      echo "${file} is not compatible; skipping!"
+      [[ -z ${QUIET} ]] && echo "${file} is not compatible; skipping!" || :
       continue
+    else
+      [[ -z ${QUIET} ]] && echo "Processing file ${file}" || :
     fi
     workname="$$-${RANDOM}"
     meta="$(pdfcat::fetch_meta "${file}")"
@@ -186,6 +190,7 @@ function parse_options() {
   while [[ ${#} -gt 0 ]]; do
     case ${1} in
     -V|--version) version;;
+    -q|--quiet)   QUIET=true;;
     -l|--lang)    shift; OCR_LANG=${1};;
     -h|--help)    usage 0;;
     *)            PDF_FILES+=( "${1}" );;
