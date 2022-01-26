@@ -1,0 +1,490 @@
+#!/usr/bin/env bash
+
+# ------------------------------------------------------------------------------
+# Setup
+# ------------------------------------------------------------------------------
+set -o errexit
+set -o nounset
+set -o pipefail
+
+trap cleanup EXIT
+
+export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin"
+
+# ------------------------------------------------------------------------------
+# Globals
+# ------------------------------------------------------------------------------
+declare -g INTERACTIVE=false
+declare -g WORKDIR=/var/tmp
+declare -g DEFAULTFILE=scan_$(date +%F_%H-%M-%S)
+declare -g T=1
+declare -g L=0
+declare -g X_MM=${X_MM:-210} #A4
+declare -g Y_MM=${Y_MM:-297} #A4
+declare -g X_PT=${X_PT:-595} #A4
+declare -g Y_PT=${Y_PT:-842} #A4
+declare -g PT_RATIO=2.83464566929 #points to mm ratio
+declare -g RESOLUTION=${RESOLUTION:-300}
+declare -g SCAN_RESOLUTION=300
+declare -g DEPTH=${DEPTH:-8}
+declare -g EXTENSION=${0##*2}
+declare -g FORMAT=${FORMAT:-tiff}
+declare -g MODE=${MODE:-Color}
+declare -g PDF_IMAGE=${PDF_IMAGE:-jpeg}
+declare -g IMAGE_QUALITY=${IMAGE_QUALITY:-90}
+declare -g FILENAME=${FILENAME:-${DEFAULTFILE}}
+declare -g PAGE=${PAGE:-A4}
+declare -g ORIENTATION=portrait
+declare -g TYPE=${TYPE:-document}
+declare -g SCANNER=""
+declare -g FIFO=""
+declare -g OCR=false
+declare -g OCR_LANG=eng
+declare -a DEPENDENCIES=(
+  mkfifo
+  scanimage
+  convert
+  tesseract
+)
+declare -a INCLUDES=(
+  pdfcat
+)
+declare -A PIDS
+
+# ------------------------------------------------------------------------------
+## FUNCTIONS
+# ------------------------------------------------------------------------------
+
+function check_dependencies() {
+  for dependency in ${DEPENDENCIES[*]}; do
+    if ! which ${dependency} >/dev/null 2>&1; then
+      echo "Missing dependency '${dependency}'" 1>&2
+      echo "Please install first!" 1>&2
+      exit 64
+    fi
+  done
+}
+
+# ------------------------------------------------------------------------------
+
+function source_includes() {
+  for include in ${INCLUDES[*]}; do
+    local path=$( which ${include} 2>/dev/null )
+    [[ -n ${path} ]] && source ${path}
+  done
+}
+
+# ------------------------------------------------------------------------------
+
+function create_namedpipe() {
+  local fifo=${WORKDIR}/${RANDOM}-${RANDOM}-$$
+  mkfifo "${fifo}" || exit 1
+  echo "${fifo}"
+}
+
+# ------------------------------------------------------------------------------
+
+function destroy_namedpipe() {
+  local fifo="${1}"; shift
+  [[ -e "${fifo}" ]] && rm "${fifo}" || :
+}
+
+# ------------------------------------------------------------------------------
+
+function pt2px() {
+  local points=${1}; shift;
+  bc -l <<< "p=((${points}/72)*${RESOLUTION}); scale=0; (p+0.5)/1"
+}
+
+# ------------------------------------------------------------------------------
+function pt2mm() {
+  local points=${1}; shift;
+  bc -l <<< "m=((${points}/${PT_RATIO})); scale=0; (m+0.5)/1"
+}
+ 
+# ------------------------------------------------------------------------------
+
+function set_default_quality() {
+  case ${EXTENSION} in
+  png)      IMAGE_QUALITY=9;;
+  jpeg|pdf) IMAGE_QUALITY=90 ;;
+  esac
+}
+
+# ------------------------------------------------------------------------------
+
+function set_ocr_language() {
+  OCR_LANG=$(
+  sed 's/ /+/g'  <<< $(echo $(tesseract --list-langs 2>&1 | grep "^...$"))
+  )
+}
+
+# ------------------------------------------------------------------------------
+
+function set_orientation() {
+  ORIENTATION=$( echo ${ORIENTATION} | tr "[A-Z]" "[a-z]" )
+  case ${ORIENTATION} in
+  p|portrait)
+    IMAGE_ROTATE=""
+    ;;
+  l|landscape)
+    IMAGE_ROTATE="( -rotate -90 )"
+    ;;
+  esac
+}
+
+# ------------------------------------------------------------------------------
+
+function get_extension() {
+  case ${EXTENSION} in
+  jpg|png) echo ${EXTENSION};;
+  pdf) [[ ${OCR} == true ]] && echo jpg || echo ${EXTENSION};;
+  esac
+}
+
+# ------------------------------------------------------------------------------
+
+function get_basename() {
+  local filename="${1}"; shift;
+  echo ${filename/%.*/}
+}
+
+# ------------------------------------------------------------------------------
+
+function process_image() {
+  local fifo="${1}"; shift;
+  local filename="${1}"; shift;
+  convert \
+    ${IMAGE_OPT} \
+    ${IMAGE_ROTATE} \
+    ${OUTPUT_OPT} \
+    "${fifo}" \
+    "${filename}" \
+    &>/dev/null
+}
+
+# ------------------------------------------------------------------------------
+
+function postprocess_pdf() {
+  local filename="${1}"; shift;
+  local basename=$( get_basename "${filename}" )
+  [[ ${EXTENSION} == pdf && ${OCR} == true ]] || return
+  tesseract -l ${OCR_LANG} "${filename}" "${basename}" pdf >/dev/null 2>&1
+  if [[ $? -eq 0 ]]; then
+    rm "${filename}"
+  else
+    echo "An error occured during character recogntion" 1>&2
+    echo "Please chech leaving original image '${filename}' intact" 1>&2
+    exit 128
+  fi
+}
+
+# ------------------------------------------------------------------------------
+
+function set_image_options() {
+  OUTPUT_OPT="${IMAGE_QUALITY:+-quality ${IMAGE_QUALITY}}"
+
+  case ${EXTENSION} in
+  pdf)
+    OUTPUT_OPT="${OUTPUT_OPT} -compress ${PDF_IMAGE}"
+    ;;
+  esac
+  ## set image magick options
+  case ${TYPE,,[a-z]} in
+  d*)
+    IMAGE_OPT="( -despeckle -level 18%,75%,1.0 )"
+    ;;
+  i*)
+    IMAGE_OPT="( -despeckle -level 15%,75%,1.0 )"
+    ;;
+  ph*)
+    IMAGE_OPT="( -level 5%,75%,0.8 )"
+    ;;
+  pr*)
+    IMAGE_OPT="( -filter lanczos -resize 120% -blur 2.0 )"
+    IMAGE_OPT="${IMAGE_OPT} ( -filter lanczos -resize 83.3333% -level 10%,75%,1.0 )"
+    ;;
+  r*)
+    IMAGE_OPT=""
+    ;;
+  esac
+
+  if [[ ${SCAN_RESOLUTION} -gt ${RESOLUTION} ]]; then
+    IMAGE_OPT="${IMAGE_OPT} ( -density ${RESOLUTION} "
+    IMAGE_OPT="${IMAGE_OPT} -geometry ${X_PX}x${Y_PX} "
+    IMAGE_OPT="${IMAGE_OPT} -filter triangle ) "
+  # IMAGE_OPT="${IMAGE_OPT} -sharpen 0x0.5 "
+  fi
+}
+
+# ------------------------------------------------------------------------------
+
+function usage() {
+  local exit_code=${1:-}; shift;
+  cat <<USAGE
+
+  Usage: $( basename $0 ) <options>
+
+    --interactive  -I  Interactive mode
+    --type         -t  Document Type
+                       Possible values are:
+                         d[ocument]      for a text document
+                         i[llustration]  for a drawing
+                         ph[otograph]    for a photographic pictue
+                         pr[int]         for a scan from a print e.g. newspaper
+                         r[aw]           for not applying any post-processing
+                         Default: ${TYPE}
+    --resolution   -r  Resolution of scan
+                         Possible values are 75, 150, 300, 600, 1200
+                         Default: ${RESOLUTION}
+    --page         -p  Page Size
+                         Possible values are A4, A5, A6, Letter, CreditCard, CD-Cover
+                         Default: ${PAGE}
+    --depth        -d  Color depth of scan
+                         1 for LineArt (Black & White)
+                         8 for Grayscale and Color
+                         16 for Color
+                         Default: ${DEPTH}
+    --format       -f  PDF image compression
+                         Possible values are jpeg, zip, lzw
+                         Default: ${PDF_IMAGE}
+    --quality      -q  Recommended for jpeg, zip, png
+                         Values for jpeg from 0 to 100
+                         Values for png and zip from 0 to 9
+                         Default: ${IMAGE_QUALITY}
+     --mode        -m  Color mode of scan
+                         Possible values are Lineart, Gray, Color
+                         Default: ${MODE}
+     --ocr         -R  Run the scan through character recognition
+                         Default: ${OCR}
+     --ocr-lang    -L  Set the language for the character recognition
+                         Every language 'tesseract' supports
+                         Default: ${OCR_LANG}
+     --output      -o  Filename of PDF file
+                         Default: ${FILENAME}
+     --orientation -O  Document orientation
+                         Possible options p[ortrait], l[andscape]
+                         Default: ${ORIENTATION}
+     --scanner     -s  Set the scanner to be used
+                         E.g: gensys:libusb:001:005
+     --help        -h  This message
+
+USAGE
+  exit ${exit_code}
+}
+
+# ------------------------------------------------------------------------------
+
+function page2mm() {
+  local page="${1}"; shift
+  local page=$( echo ${page} | tr "[A-Z]" "[a-z]" )
+  case ${page} in
+  a4)
+    X_PT=595
+    Y_PT=842
+    ;;
+  a5)
+    X_PT=421
+    Y_PT=595
+    ;;
+  a6)
+    X_PT=297
+    Y_PT=421
+    ;;
+  letter)
+    X_PT=612
+    Y_PT=792
+    ;;
+  cc|creditcard)
+    X_PT=243
+    Y_PT=153
+    ;;
+  cd-cover)
+    X_PT=408
+    Y_PT=362
+    ;;
+  esac
+  X_MM=$(pt2mm ${X_PT})
+  Y_MM=$(pt2mm ${Y_PT})
+  X_PX=$(pt2px ${X_PT})
+  Y_PX=$(pt2px ${Y_PT})
+}
+
+# ------------------------------------------------------------------------------
+
+function parse_options() {
+  while (( ${#} > 0 )); do
+    case ${1} in
+    --ocr|-R)         OCR=true;;
+    --interactive|-I) INTERACTIVE=true;;
+    --depth|-d)       shift; DEPTH="${1}";;
+    --format|-f)      shift; PDF_IMAGE="${1}";;
+    --mode|-m)        shift; MODE="${1}";;
+    --ocr-lang|-L)    shift; OCR_LANG="${1}";;
+    --orientation|-O) shift; ORIENTATION="${1}";;
+    --output|-o)      shift; FILENAME="${1}";;
+    --page|-p)        shift; PAGE="${1}";;
+    --quality|-q)     shift; IMAGE_QUALITY="${1}";;
+    --scanner|-s)     shift; SCANNER="${1}";;
+    --type|-t)        shift; TYPE="${1}";;
+    --resolution|-r)  
+      shift; RESOLUTION="${1}"
+  	  SCAN_RESOLUTION=$((${RESOLUTION} < 300 ? 300 : ${RESOLUTION}))
+      ;;
+    --help|-h) usage 0;;
+    *)         usage 1;;
+    esac
+    shift
+  done
+}
+
+
+# ------------------------------------------------------------------------------
+
+function scan_image() {
+  local filename="${1}"; shift;
+  ## create the named pipe
+  FIFO=$( create_namedpipe )
+  filename="${filename}.$( get_extension )"
+
+  ## latch convert to the named pipe and put into background
+  ## when done destroy the named pipe
+
+  (
+    process_image "${FIFO}" "${filename}"
+    destroy_namedpipe "${FIFO}"
+    postprocess_pdf "${filename}"
+  ) &
+
+  manage_pids $! "${filename}"
+
+  scanimage \
+    ${T:+-t ${T}} \
+    ${L:+-l ${L}} \
+    -x ${X_MM} \
+    -y ${Y_MM} \
+    ${SCANNER:+-d ${SCANNER}} \
+    --resolution ${SCAN_RESOLUTION} \
+    --depth ${DEPTH} \
+    --format ${FORMAT} \
+    --mode ${MODE} > ${FIFO} 2>/dev/null
+}
+
+# ------------------------------------------------------------------------------
+
+function manage_pids() {
+  local pid="${1}"; shift;
+  local filename="${1}"; shift;
+  [[ ${INTERACTIVE} == false ]] && return
+  PIDS["${filename%%.*}"]=${pid}
+}
+
+# ------------------------------------------------------------------------------
+
+function wait_for_pids() {
+  local documents=( "${@}" )
+  while true; do
+    declare -i count=0
+    for name in "${documents[@]}"; do
+      ps -p ${PIDS["${name%%.*}"]-} &> /dev/null && count+=1 || :
+    done
+    if (( ${count} == 0 )); then
+      clear_pids "${documents[@]}"
+      return 0
+    fi
+    sleep 1
+  done
+}
+
+# ------------------------------------------------------------------------------
+
+function clear_pids() {
+  local documents=( "${@}" )
+  for name in "${documents[0]}"; do
+    unset PIDS["${name%%.*}"] 2>/dev/null
+  done
+}
+
+# ------------------------------------------------------------------------------
+
+function merge_pdf() {
+  local filename="${1}"; shift;
+  local documents=( "${@}" ); shift;
+  [[ ${EXTENSION} == pdf ]] || return
+  wait_for_pids "${documents[@]}"
+  if [[ ${#documents[@]} -eq 1 ]]; then
+    mv "${documents[0]}" "${filename}.${EXTENSION}" 2>/dev/null
+  else
+    pdfcat::concat_pdf "${documents[@]}" > "${filename}.${EXTENSION}" &&
+    rm "${documents[@]}" 2>/dev/null
+  fi
+}
+
+# ------------------------------------------------------------------------------
+
+function ask_action() {
+  local -- filename="${1}"; shift;
+  local -a documents=()
+  local -i count=0
+  PS3="Choose action > "
+  select action in "Scan document" "Finish scan" "Wrap up and quit"; do
+    case ${action} in
+    S*)
+      tempfile="${filename}-${count}"
+      scan_image "${tempfile}"
+      documents+=( "${tempfile}.${EXTENSION}" )
+      count+=1
+      ;;
+    F*)
+      merge_pdf "${filename}" "${documents[@]}" &
+      break
+      ;;
+    W*)
+      merge_pdf "${filename}" "${documents[@]}"
+      exit
+      ;;
+    esac
+  done
+}
+
+# ------------------------------------------------------------------------------
+
+function run_interactive() {
+  source_includes
+  local filename=scan_$( date +%F_%H-%M-%S )
+  local name
+  echo -n "Enter filename [${filename}]: "
+  read name
+  if [[ -n ${name} ]]; then
+    filename="${name}"
+  fi
+  ask_action "${filename}"
+  run_interactive
+}
+
+# ------------------------------------------------------------------------------
+
+function scan() {
+  case ${INTERACTIVE} in
+  true)  run_interactive;;
+  false) scan_image "${FILENAME}";;
+  esac
+}
+
+# ------------------------------------------------------------------------------
+
+function cleanup() {
+  destroy_namedpipe "${FIFO}"
+}
+
+# ------------------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------------------
+check_dependencies
+set_ocr_language
+set_default_quality
+parse_options "${@}"
+page2mm ${PAGE}
+set_image_options
+set_orientation
+scan
