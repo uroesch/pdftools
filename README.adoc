@@ -7,10 +7,34 @@
 :revnumber: 0.7.0
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
   tesseract, OCR
-:!toc:
+:toc:
 
-A collection of PDF command line tools and wrappers for Linux
+A collection of PDF command line tools and wrappers for Linux.
 
+
+[[installation]]
+== Installation instructions
+
+The scripts are meant to be installed in a users' home directory. To do this
+quickly the `Makefile` in the root of the repository has a target called 
+`user_install`.
+
+[source,console]
+----
+$ make user_install
+Install pdftools under /home/<user>/bin
+-> Installing bin/img2pdf to /home/<user>/bin/img2pdf
+-> Installing bin/ocrpdf to /home/<user>/bin/ocrpdf
+-> Installing bin/pdf2pdfa to /home/<user>/bin/pdf2pdfa
+-> Installing bin/pdfcat to /home/<user>/bin/pdfcat
+-> Installing bin/pdfmeta to /home/<user>/bin/pdfmeta
+-> Installing bin/pdfresize to /home/<user>/bin/pdfresize
+-> Installing bin/scan2jpg to /home/<user>/bin/scan2jpg
+-> Installing bin/scan2pdf to /home/<user>/bin/scan2pdf
+-> Installing bin/scan2png to /home/<user>/bin/scan2png
+----
+
+To uninstall everything the target `user_uninstall` can be used.
 
 [[img2pdf]]
 == img2pdf
@@ -19,24 +43,6 @@ A script to convert PNGs, TIFFs or JPEGs to PDF files.
 
 License:: MIT
 Requires:: bash, pdfcat, ImageMagick, pdftk
-
-[[img2pdf-usage]]
-=== Usage
-
-----
-  Usage:
-    img2pdf <options> <img-file> [<img-file> ... ]
-
-  Options:
-    -h  | --help           This message
-    -d  | --delete         Delete the images after creating the PDF file.
-    -o  | --output <name>  Write the output to specified file <name>.
-    -r  | --rotate <value> Rotate the image by <value>
-                           Where value can be a positive or negative integer
-                           between 0 and 360.
-    -V  | --version        Display version and exit
-
-----
 
 [[img2pdf-examples]]
 === Examples
@@ -61,6 +67,25 @@ img2pdf --rotate 180 myimage.png
 img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 ----
 
+[[img2pdf-usage]]
+=== Usage
+
+----
+  Usage:
+    img2pdf <options> <img-file> [<img-file> ... ]
+
+  Options:
+    -h  | --help           This message
+    -d  | --delete         Delete the images after creating the PDF file.
+    -o  | --output <name>  Write the output to specified file <name>.
+    -r  | --rotate <value> Rotate the image by <value>
+                           Where value can be a positive or negative integer
+                           between 0 and 360.
+    -V  | --version        Display version and exit
+
+----
+
+
 <<<
 
 [[ocrpdf]]
@@ -75,6 +100,24 @@ one during the OCR process.
 
 License:: MIT
 Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
+
+[[ocrpdf-examples]]
+=== Examples
+
+.Run OCR with all installed languages on a couple of PDFs
+----
+ocrpdf first.pdf second.pdf
+----
+
+.Run OCR with German dictionary on a single PDF
+----
+ocrpdf --lang deu german.pdf
+----
+
+.Run OCR with German, French and English dictionaries on multiple PDFs
+----
+ocrpdf --lang deu+fra+eng  scanned_*.pdf
+----
 
 [[ocrpdf-usage]]
 === Usage
@@ -103,24 +146,6 @@ Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
     the OCR process.
 ----
 
-[[ocrpdf-examples]]
-=== Examples
-
-.Run OCR with all installed languages on a couple of PDFs
-----
-ocrpdf first.pdf second.pdf
-----
-
-.Run OCR with German dictionary on a single PDF
-----
-ocrpdf --lang deu german.pdf
-----
-
-.Run OCR with German, French and English dictionaries on multiple PDFs
-----
-ocrpdf --lang deu+fra+eng  scanned_*.pdf
-----
-
 <<<
 
 [[pdfcat]]
@@ -131,13 +156,6 @@ meta data.
 
 License:: MIT
 Requires:: bash, pdftk >= 2.0
-
-[[pdfcat-usage]]
-=== Usage
-
-----
-pdfcat <pdf> <pdf> [..]
-----
 
 [[pdfcat-examples]]
 === Examples
@@ -152,6 +170,13 @@ pdfcat first.pdf  second.pdf > merged.pdf
 pdfcat myscan*.pdf > merged.pdf
 ----
 
+[[pdfcat-usage]]
+=== Usage
+
+----
+pdfcat <pdf> <pdf> [..]
+----
+
 <<<
 
 [[pdfmeta]]
@@ -161,6 +186,19 @@ A wrapper script around `pdftk` to manipulate a PDFs meta data
 
 License:: MIT
 Requires:: bash >= 4.0, pdftk >= 2.0
+
+[[pdfmeta-examples]]
+=== Examples
+
+.Modify keywords
+----
+pdfmeta --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
+----
+
+.Modify creation date
+----
+pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
+----
 
 [[pdfmeta-usage]]
 === Usage
@@ -181,19 +219,6 @@ Requires:: bash >= 4.0, pdftk >= 2.0
       -V | --version            Display version and exit
 ----
 
-[[pdfmeta-examples]]
-=== Examples
-
-.Modify keywords
-----
-pdfmeta --keywords "rainbow, magical, unicorn" unicorn.pdf rainbow.pdf
-----
-
-.Modify creation date
-----
-pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
-----
-
 <<<
 
 [[pdfresize]]
@@ -206,6 +231,19 @@ https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
 
 License:: MIT
 Requires:: bash, ghostscript
+
+[[pdfresize-examples]]
+=== Examples
+
+.Resize to default resolution
+----
+pdresize --input input.pdf --output output.pdf
+----
+
+.Resize to screen resolution
+----
+pdfresize --quality screen --input input.pdf --output output.pdf
+----
 
 [[pdfresize-usage]]
 === Usage
@@ -230,18 +268,7 @@ Requires:: bash, ghostscript
     default  - intended to be useful across a wide variety of uses
 ----
 
-[[pdfresize-examples]]
-=== Examples
-
-.Resize to default resolution
-----
-pdresize --input input.pdf --output output.pdf
-----
-
-.Resize to screen resolution
-----
-pdfresize --quality screen --input input.pdf --output output.pdf
-----
+<<<
 
 [[pdf2pdfa]]
 == pdf2pdfa
@@ -249,19 +276,6 @@ pdfresize --quality screen --input input.pdf --output output.pdf
 Small script to convert a PDF to PDF/A type.
 
 NOTE: This is early beta and all the meta data in the PDF will be lost!
-
-[[pdf2pdfa-usage]]
-== Usage
-
------
-  Usage:
-    pdf2pdfa [-h] [-s <suffix>] <pdf_file> [<pdf_file> [..]]
-
-  Options:
-    -h | --help             This message
-    -s | --suffix <suffix>  Append <suffix> to filename
-                            Default '_a'
------
 
 [[pdf2pdfa-examples]]
 === Examples
@@ -276,4 +290,18 @@ pdf2pdfa sample.pdf
 pdf2pdfa --suffix _pdfa sample.pdf
 ----
 
-// vim: set colorcolumn=80 spell spelllang=en_us :
+[[pdf2pdfa-usage]]
+== Usage
+
+-----
+  Usage:
+    pdf2pdfa [-h] [-s <suffix>] <pdf_file> [<pdf_file> [..]]
+
+  Options:
+    -h | --help             This message
+    -s | --suffix <suffix>  Append <suffix> to filename
+                            Default '_a'
+-----
+
+
+// vim: set colorcolumn=80 textwidth=80 spell spelllang=en_us :
