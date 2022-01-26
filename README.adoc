@@ -7,7 +7,7 @@
 :revnumber: 0.7.0
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
   tesseract, OCR
-:toc:
+:!toc:
 
 A collection of PDF command line tools and wrappers for Linux.
 
@@ -302,6 +302,117 @@ pdf2pdfa --suffix _pdfa sample.pdf
     -s | --suffix <suffix>  Append <suffix> to filename
                             Default '_a'
 -----
+
+<<<
+
+[[scan2pdf]]
+== scan2pdf
+
+Is frontend for `scanimage` but has only been tested against the Canon LiDE 210
+scanner.
+
+Some but not all notable features are:
+
+* Can OCR scanned documents using `tesseract`.
+* Scan a few predefined sizes such as A4 and A5 among others.
+* Symlinked to `scan2png` produces PNG and symlinked to `scan2jpg` produces JPEG
+  image output.
+* Has command line mode only for single page or interactive mode for multi page
+  scans.
+
+[[scan2pdf-examples]]
+=== Examples
+
+.Simple single page document produces file `scan_YYYY-MM-DD_hh-mm-ss.pdf`
+[source,console]
+----
+scan2pdf
+----
+
+.Simple single page document wth OCR produces file +
+  `scan_YYYY-MM-DD_hh-mm-ss.pdf`
+[source,console]
+----
+scan2pdf --ocr
+----
+
+.Multi page interactive mode wth OCR.
+[source,console]
+----
+scan2pdf --interactive --ocr
+Enter filename [scan_2022-01-26_23-15-30]: <.>
+1) Scan document <.>
+2) Finish scan <.>
+3) Wrap up and quit <.>
+Choose action > 1 <.>
+Choose action > 1 <.>
+Choose action > 3 <.>
+----
+<.> Provide file name or press enter to accept the default name.
+<.> Menu option `1` scans a page then returns to the prompt.
+<.> Menu option `2` writes all pages to a PDF file  and prompts for a new name.
+<.> Menu option `3` writes all pages to a PDF file and exists.
+<.> Scan one page.
+<.> Scan another page.
+<.> Write PDF and exit.
+
+.Scan and save as JPEG with filename `scan_YYYY-MM-DD_hh-mm-ss.jpg`
+[source,console]
+----
+scan2jpg
+----
+
+[[scan2pdf-usage]]
+=== Usage 
+
+[source,console]
+----
+  Usage: scan2pdf <options>
+
+    --interactive  -I  Interactive mode
+    --type         -t  Document Type
+                       Possible values are:
+                         d[ocument]      for a text document
+                         i[llustration]  for a drawing
+                         ph[otograph]    for a photographic pictue
+                         pr[int]         for a scan from a print e.g. newspaper
+                         r[aw]           for not applying any post-processing
+                         Default: document
+    --resolution   -r  Resolution of scan
+                         Possible values are 75, 150, 300, 600, 1200
+                         Default: 300
+    --page         -p  Page Size
+                         Possible values are A4, A5, A6, Letter, CreditCard, CD-Cover
+                         Default: A4
+    --depth        -d  Color depth of scan
+                         1 for LineArt (Black & White)
+                         8 for Grayscale and Color
+                         16 for Color
+                         Default: 8
+    --format       -f  PDF image compression
+                         Possible values are jpeg, zip, lzw
+                         Default: jpeg
+    --quality      -q  Recommended for jpeg, zip, png
+                         Values for jpeg from 0 to 100
+                         Values for png and zip from 0 to 9
+                         Default: 90
+     --mode        -m  Color mode of scan
+                         Possible values are Lineart, Gray, Color
+                         Default: Color
+     --ocr         -R  Run the scan through character recognition
+                         Default: false
+     --ocr-lang    -L  Set the language for the character recognition
+                         Every language 'tesseract' supports
+                         Default: deu+eng+fra+ita+jpn+osd
+     --output      -o  Filename of PDF file
+                         Default: scan_2022-01-26_23-10-20
+     --orientation -O  Document orientation
+                         Possible options p[ortrait], l[andscape]
+                         Default: portrait
+     --scanner     -s  Set the scanner to be used
+                         E.g: gensys:libusb:001:005
+     --help        -h  This message
+----
 
 
 // vim: set colorcolumn=80 textwidth=80 spell spelllang=en_us :
