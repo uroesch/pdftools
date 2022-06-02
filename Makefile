@@ -12,19 +12,21 @@ MAKEFLAGS += --no-builtin-rules
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-DIVIDER    := $$(printf "%0.1s" -{1..80})
-OS_FAMILY  := $(shell lsb_release -i -s | tr "A-Z" "a-z")
-OS_RELEASE := $(shell lsb_release -r -s)
-OS_NAME    := $(OS_FAMILY)_$(OS_RELEASE)
-USER_BIN   := $(HOME)/bin
+DIVIDER       := $$(printf "%0.1s" -{1..80})
+OS_FAMILY     := $(shell lsb_release -i -s | tr "A-Z" "a-z")
+OS_RELEASE    := $(shell lsb_release -r -s)
+OS_NAME       := $(OS_FAMILY)_$(OS_RELEASE)
+USER_BIN      := $(HOME)/bin
+REPO_NAME     := $(shell basename $(CURDIR))
+BASH_VERSIONS := 4.0 4.1 4.2 4.3 4.4 5.0 5.1 5.2-rc
 
 # -----------------------------------------------------------------------------
 # Contidionally assigned globals
 # -----------------------------------------------------------------------------
-ifeq ($(OS_NAME), ubuntu_20.04)
-  ASCIIDOCTOR_DEPENDENCIES := deb::asciidoctor deb::ruby-asciidoctor-pdf 
+ifeq ($(OS_NAME), ubuntu_18.04)
+	ASCIIDOCTOR_DEPENDENCIES := gem:asciidoctor-pdf:1.6.2 
 else
-  ASCIIDOCTOR_DEPENDENCIES := deb::asciidoctor gem::asciidoctor-pdf 
+	ASCIIDOCTOR_DEPENDENCIES := deb:asciidoctor deb:ruby-asciidoctor-pdf
 endif
 
 .PHONY: test
@@ -35,8 +37,7 @@ endif
 asciidoctor_dependencies:
 	@echo "Install asciidoctor dependencies $(ASCIIDOCTOR_DEPENDENCIES)"
 	for pkg in $(ASCIIDOCTOR_DEPENDENCIES); do
-		method=$${pkg%%::*}
-		name=$${pkg##*::}
+		IFS=: read method name version <<< $${pkg}
 		case $${method} in
 		deb)
 			if dpkg -l $${name} &>/dev/null; then
@@ -49,21 +50,22 @@ asciidoctor_dependencies:
 			if gem list $${name} | grep -q ^$${name}; then
 				echo "Ruby Gem $${name} already installed"
 			else  
-				gem install $${name}
+				gem install $${name} $${version:+--version $${version}}
 			fi
 			;;
 		esac
-		done
+	done
 	@echo $(DIVIDER)
 
 docs/README.html: README.adoc
-	@echo "Build $<"
+	@echo "Build HTML doc $<"
 	asciidoctor -D docs $<
 	@echo $(DIVIDER)
 
 docs/README.pdf: README.adoc
-	@echo "Build $<"
-	asciidoctor-pdf -D docs $<
+	@echo "Build PDF doc $<"
+	ruby --version
+	asciidoctor-pdf --trace -D docs $<
 	@echo $(DIVIDER)
 
 docs: asciidoctor_dependencies docs/README.html docs/README.pdf
@@ -72,20 +74,20 @@ docs: asciidoctor_dependencies docs/README.html docs/README.pdf
 # User install
 # -----------------------------------------------------------------------------
 user_install:
-	@echo "Install pdftools under $(USER_BIN)"
+	@echo "Install $(REPO_NAME) under $(USER_BIN)"
 	mkdir -p $(USER_BIN) || :
 	for script in bin/*; do
 		basename=$${script##*/}
-		install $${script} $(USER_BIN)/$${basename} && 
+		install $${script} $(USER_BIN)/$${basename} &&
 		echo "-> Installing $${script} to $(USER_BIN)/$${basename}"
 	done
 
 user_uninstall:
-	@echo "Uninstall pdftools from $(USER_BIN)"
+	@echo "Uninstall $(REPO_NAME) from $(USER_BIN)"
 	for script in bin/*; do
 		basename=$${script##*/}
 		if [[ -f $(USER_BIN)/$${basename} ]]; then
-			rm $(USER_BIN)/$${basename} && 
+			rm $(USER_BIN)/$${basename} &&
 			echo "-> Unstalling $(USER_BIN)/$${basename}"
 		fi
 	done
@@ -97,7 +99,38 @@ clean:
 	test -d docs && \
 		find docs \( -name "*.pdf" -or -name "*.html" \) -print -delete
 # -----------------------------------------------------------------------------
-# Tests
+# Run tests
 # -----------------------------------------------------------------------------
 test:
 	bash test/test-pdftools
+
+test-bash:
+	@echo "Bash tests"
+	declare -a VERSIONS=( $(BASH_VERSIONS) );
+	function  setup() {
+		apk add \
+			curl \
+			file \
+			grep \
+			imagemagick \
+			make \
+			openjdk11-jre-headless \
+			poppler-utils \
+			tesseract-ocr; \
+			curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' && \
+			mv pdftk-all.jar /usr/lib/ && \
+			echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$$@\"" > /usr/bin/pdftk && \
+			chmod 755 /usr/bin/pdftk
+	};
+	for version in $${VERSIONS[@]}; do
+		@echo "Test bash version $${version}"
+		docker run \
+			--rm \
+			--tty \
+			--volume $$(pwd):/pdftools \
+			--workdir /pdftools \
+			bash:$${version} \
+			bash -c "$$(declare -f setup); setup &>/dev/null && make test";
+	done
+
+# vim: shiftwidth=2 noexpandtab :
