@@ -21,19 +21,15 @@ jobs:
     strategy:
       matrix:
         os:
+        - ubuntu-22.04
         - ubuntu-20.04
         - ubuntu-18.04
 
     steps:
-    - name: Install asciidoctor 
-      shell: bash
-      run: >
-        sudo gem install asciidoctor asciidoctor-pdf
-
     - name: Checkout repository
       uses: actions/checkout@v2
 
     - name: Create documents
       shell: bash
       run: >
-        make docs
+        sudo make docs
