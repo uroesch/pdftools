@@ -14,6 +14,10 @@ export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbi
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
+declare -r SCRIPT=${0##*/}
+declare -r VERSION=0.4.1
+declare -r AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r LICENSE="MIT"
 declare -g INTERACTIVE=false
 declare -g WORKDIR=/var/tmp
 declare -g DEFAULTFILE=scan_$(date +%F_%H-%M-%S)
@@ -52,7 +56,7 @@ declare -a INCLUDES=(
 declare -A PIDS
 
 # ------------------------------------------------------------------------------
-## FUNCTIONS
+# FUNCTIONS
 # ------------------------------------------------------------------------------
 
 function check_dependencies() {
@@ -63,6 +67,14 @@ function check_dependencies() {
       exit 64
     fi
   done
+}
+
+# -----------------------------------------------------------------------------
+
+function version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${SCRIPT}" "${VERSION}" "${AUTHOR}" "${LICENSE}"
+  exit 0
 }
 
 # ------------------------------------------------------------------------------
@@ -267,6 +279,7 @@ function usage() {
                          Default: ${ORIENTATION}
      --scanner     -s  Set the scanner to be used
                          E.g: gensys:libusb:001:005
+     --version     -V  Print version and exit
      --help        -h  This message
 
 USAGE
@@ -331,13 +344,13 @@ function parse_options() {
       shift; RESOLUTION="${1}"
   	  SCAN_RESOLUTION=$((${RESOLUTION} < 300 ? 300 : ${RESOLUTION}))
       ;;
-    --help|-h) usage 0;;
-    *)         usage 1;;
+    --version|-V) version;;
+    --help|-h)    usage 0;;
+    *)            usage 1;;
     esac
     shift
   done
 }
-
 
 # ------------------------------------------------------------------------------
 
