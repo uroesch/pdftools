@@ -24,10 +24,6 @@ jobs:
         os:
         - ubuntu-latest
         bash:
-        # not yet compatible older bash versions
-        #- '3.0'
-        #- '3.1'
-        #- '3.2'
         - '4.0'
         - '4.1'
         - '4.2'
@@ -46,7 +42,7 @@ jobs:
       shell: bash
       run: |
         function install-dependencies() {
-          apk add curl poppler-utils imagemagick file openjdk11-jre-headless tesseract-ocr grep &&
+          apk add bats curl poppler-utils imagemagick file openjdk11-jre-headless sane-utils tesseract-ocr grep &&
           curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' &&
           mv pdftk-all.jar /usr/lib/ &&
           echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$@\"" > /usr/bin/pdftk &&

@@ -103,12 +103,14 @@ clean:
 # -----------------------------------------------------------------------------
 test:
 	bash test/test-pdftools
+	bats tests/*bats
 
 test-bash:
 	@echo "Bash tests"
 	declare -a VERSIONS=( $(BASH_VERSIONS) );
 	function  setup() {
 		apk add \
+			bats \
 			curl \
 			file \
 			grep \
@@ -116,6 +118,7 @@ test-bash:
 			make \
 			openjdk11-jre-headless \
 			poppler-utils \
+			sane-utils \
 			tesseract-ocr; \
 			curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' && \
 			mv pdftk-all.jar /usr/lib/ && \
