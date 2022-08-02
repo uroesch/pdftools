@@ -2,7 +2,7 @@
 
 load includes
 
-test "scan2png: Common option --help" {
+@test "scan2png: Common option --help" {
   output=$(scan2png --help 2>&1)
   [[ ${output} =~ ' --help ' ]]
   [[ ${output} =~ ' --interactive ' ]]
