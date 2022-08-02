@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Automerge pull requests for pdftools
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.2.0
+# Version: 0.3.0
 # -----------------------------------------------------------------------------
 name: automerge
 on:
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge pull request
-        uses: "pascalgn/automerge-action@v0.9.0"
+        uses: "pascalgn/automerge-action@v0.15.3"
         env:
           MERGE_FILTER_AUTHOR: uroesch
           MERGE_FORKS: false
