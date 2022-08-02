@@ -4,8 +4,8 @@ load includes
 
 @test "img2pdf: Common option --help" {
   output=$(img2pdf --help 2>&1)
-  [[ ${output} =~ ' --help ' ]]
   [[ ${output} =~ ' --delete ' ]]
+  [[ ${output} =~ ' --help ' ]]
   [[ ${output} =~ ' --output ' ]]
   [[ ${output} =~ ' --rotate ' ]]
   [[ ${output} =~ ' --version ' ]]
@@ -13,8 +13,8 @@ load includes
 
 @test "img2pdf: Common option -h" {
   output=$(img2pdf -h 2>&1)
-  [[ ${output} =~ ' -h ' ]]
   [[ ${output} =~ ' -d ' ]]
+  [[ ${output} =~ ' -h ' ]]
   [[ ${output} =~ ' -o ' ]]
   [[ ${output} =~ ' -r ' ]]
   [[ ${output} =~ ' -V ' ]]
@@ -26,4 +26,34 @@ load includes
 
 @test "img2pdf: Common option -V" {
   img2pdf -V | grep -w ${IMG2PDF_VERSION}
+}
+
+@test "img2pdf: Create pdf from png" {
+  ::pdf-to-images png
+  output_pdf=${TEMP_DIR}/img2pdf-from-png.pdf
+  img2pdf \
+    --output ${output_pdf} \
+    $(find ${TEMP_DIR} -type f -name "*png")
+  ::is-pdf ${output_pdf}
+  ::cleanup-tempdir
+}
+
+@test "img2pdf: Create pdf from tiff" {
+  ::pdf-to-images tiff
+  output_pdf=${TEMP_DIR}/img2pdf-from-tiff.pdf
+  img2pdf \
+    --output ${output_pdf} \
+    $(find ${TEMP_DIR} -type f -name "*tif")
+  ::is-pdf ${output_pdf}
+  ::cleanup-tempdir
+}
+
+@test "img2pdf: Create pdf from jpeg" {
+  ::pdf-to-images jpeg
+  output_pdf=${TEMP_DIR}/img2pdf-from-jpeg.pdf
+  img2pdf \
+    --output ${output_pdf} \
+    $(find ${TEMP_DIR} -type f -name "*jpg")
+  ::is-pdf ${output_pdf}
+  ::cleanup-tempdir
 }
