@@ -30,30 +30,24 @@ load includes
 
 @test "img2pdf: Create pdf from png" {
   ::pdf-to-images png
-  output_pdf=${TEMP_DIR}/img2pdf-from-png.pdf
-  img2pdf \
-    --output ${output_pdf} \
-    $(find ${TEMP_DIR} -type f -name "*png")
-  ::is-pdf ${output_pdf}
+  pdf=${TEMP_DIR}/img2pdf-from-png.pdf
+  ::img2pdf "${pdf}" png
+  ::is-pdf "${pdf}"
   ::cleanup-tempdir
 }
 
 @test "img2pdf: Create pdf from tiff" {
   ::pdf-to-images tiff
-  output_pdf=${TEMP_DIR}/img2pdf-from-tiff.pdf
-  img2pdf \
-    --output ${output_pdf} \
-    $(find ${TEMP_DIR} -type f -name "*tif")
-  ::is-pdf ${output_pdf}
+  pdf=${TEMP_DIR}/img2pdf-from-tiff.pdf
+  ::img2pdf "${pdf}" tif
+  ::is-pdf "${pdf}"
   ::cleanup-tempdir
 }
 
 @test "img2pdf: Create pdf from jpeg" {
   ::pdf-to-images jpeg
-  output_pdf=${TEMP_DIR}/img2pdf-from-jpeg.pdf
-  img2pdf \
-    --output ${output_pdf} \
-    $(find ${TEMP_DIR} -type f -name "*jpg")
-  ::is-pdf ${output_pdf}
+  pdf=${TEMP_DIR}/img2pdf-from-jpeg.pdf
+  ::img2pdf "${pdf}" jpg
+  ::is-pdf "${pdf}"
   ::cleanup-tempdir
 }
