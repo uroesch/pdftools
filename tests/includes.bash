@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 export PATH=${BATS_TEST_DIRNAME}/../bin:${PATH}
 export IMG2PDF_VERSION="v0.2.6"
-export OCRPDF_VERSION="v0.4.0"
+export OCRPDF_VERSION="v0.4.1"
 export PDF2PDFA_VERSION="v0.1.2"
 export PDFMETA_VERSION="v0.1.5"
 export PDFRESIZE_VERSION="v0.0.5"
@@ -47,4 +47,21 @@ function ::pdf-to-images() {
    -${format} \
    ${FILES_DIR}/${SAMPLE_PDF} \
    ${TEMP_DIR}/sample-image
+}
+
+function ::pdf-to-text() {
+  local pdf=${1}; shift;
+  local pattern=${1}; shift;
+  local occurrence=${1}; shift;
+  pdftotext "${pdf}"
+  count=$(grep -c "${pattern}" ${pdf%%.*}.txt 2>/dev/null)
+  (( count == occurrence ))
+}
+
+function ::img2pdf() {
+  local output=${1}; shift;
+  local source=${1}; shift;
+  img2pdf \
+    --output ${output} \
+    $(find ${TEMP_DIR} -type f -name "*.${source}")
 }

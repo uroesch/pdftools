@@ -24,7 +24,7 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.4.0
+declare -r VERSION=0.4.1
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -- QUIET=
@@ -105,12 +105,12 @@ function usage() {
 
   Options:
     -h | --help         This message
-    -q | --quiet        Don't send display processed file names
-    -V | --version      Print version information and exit
     -l | --lang <lang>  Set the OCR languages to use.
                         For multiple languages concatenate with a '+'
                         E.g eng+deu for English and German
                         Default: ${OCR_LANG}
+    -q | --quiet        Don't send display processed file names
+    -V | --version      Print version information and exit
 
   Description:
     Runs PDFs through OCR and saves the output as a text searchable PDF
