@@ -7,7 +7,28 @@
 :revnumber: 0.7.1
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
   tesseract, OCR
+:base-url:  https://github.com/uroesch/pdftools
 :!toc:
+ifdef::env-github[]
+:tip-caption:       :bulb:
+:note-caption:      :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption:   :fire:
+:warning-caption:   :warning:
+endif::[]
+
+image:{base-url}/workflows/bash-compatibility/badge.svg[
+  title="bash-compatilibity",
+  link="{base-url}/actions?query=workflow:bash-compatilbility"
+]
+image:{base-url}/workflows/test-pdftools/badge.svg[
+  title="test-pdftools",
+  link="{base-url}/actions?query=workflow:test-pdftools"
+]
+image:{base-url}/workflows/create-docs/badge.svg[
+  title="create-docs",
+  link="{base-url}/actions?query=workflow:create-docs"
+]
 
 A collection of PDF command line tools and wrappers for Linux written in Bash
 Shell script.
