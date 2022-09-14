@@ -6,16 +6,24 @@
 :email:     github@bun.ch
 :revnumber: 0.7.1
 :keywords:  PDF, CLI, Command Line, tools, documents, pdftk, ghostscript, +
-  tesseract, OCR
-:base-url:  https://github.com/uroesch/pdftools
+  poppler utils, tesseract, OCR
 :!toc:
+:icons: font
+:git-user: uroesch
+:repo-name: pdftools
+ifdef::env-gitlab[]
+:base-url:   https://gitlab.com/{git-user}/{repo-name}
+:email:      gitlab@bun.ch
+endif::env-gitlab[]
 ifdef::env-github[]
+:base-url:          https://github.com/{git-user}/{repo-name}
+:email:             github@bun.ch
 :tip-caption:       :bulb:
 :note-caption:      :information_source:
 :important-caption: :heavy_exclamation_mark:
 :caution-caption:   :fire:
 :warning-caption:   :warning:
-endif::[]
+endif::env-github[]
 
 image:{base-url}/workflows/bash-compatibility/badge.svg[
   title="bash-compatilibity",
@@ -30,9 +38,22 @@ image:{base-url}/workflows/create-docs/badge.svg[
   link="{base-url}/actions?query=workflow:create-docs"
 ]
 
-A collection of PDF command line tools and wrappers for Linux written in Bash
-Shell script.
+ifndef::env-github,env-gitlab[]
+image:icons/gitlab-avatar.png[float="left"]
+endif::env-github,env-gitlab[]
 
+ifdef::env-github,env-gitlab[]
++++
+<img src="icons/gitlab-avatar.png" align="left">
++++
+endif::env-github,env-gitlab[]
+
+A collection of PDF command line tools and wrappers for Linux written in Bash
+Shell script. These are generally speaking convenience tools so one does not
+have to remember very long and cryptic options and switches. 
+
+The heavy lifting is done by backend tools such as pdftk, ghostscript and the 
+poppler utils are used.
 
 [[installation]]
 == Installation instructions
