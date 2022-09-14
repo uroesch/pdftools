@@ -25,6 +25,8 @@ ifdef::env-github[]
 :warning-caption:   :warning:
 endif::env-github[]
 
+
+ifdef::env-github[]
 image:{base-url}/workflows/bash-compatibility/badge.svg[
   title="bash-compatilibity",
   link="{base-url}/actions?query=workflow:bash-compatilbility"
@@ -37,6 +39,7 @@ image:{base-url}/workflows/create-docs/badge.svg[
   title="create-docs",
   link="{base-url}/actions?query=workflow:create-docs"
 ]
+endif::env-github[]
 
 ifndef::env-github,env-gitlab[]
 image:icons/gitlab-avatar.png[float="left"]
@@ -44,7 +47,7 @@ endif::env-github,env-gitlab[]
 
 ifdef::env-github,env-gitlab[]
 +++
-<img src="icons/gitlab-avatar.png" align="left">
+<img src="icons/gitlab-avatar.png" align="left" style="margin-right: 10px">
 +++
 endif::env-github,env-gitlab[]
 
