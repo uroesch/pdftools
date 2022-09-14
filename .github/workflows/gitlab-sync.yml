@@ -1,0 +1,24 @@
+# -----------------------------------------------------------------------------
+# Sync changes to gitlab.com
+# Author: Urs Roesch https://github.com/uroesch
+# Version: 0.1.0
+# -----------------------------------------------------------------------------
+name: gitlab-sync
+
+on:
+  - push
+  - delete
+
+jobs:
+  gitlab-sync:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: wangchucheng/git-repo-sync@v0.1.0
+      with:
+        target-url: https://gitlab.com/${{ github.repository }}
+        target-username: ${{ github.repository_owner }}
+        target-token: ${{ secrets.GITLAB_TOKEN }}
