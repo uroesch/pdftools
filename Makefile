@@ -24,7 +24,8 @@ BASH_VERSIONS := 4.0 4.1 4.2 4.3 4.4 5.0 5.1 5.2-rc
 # Contidionally assigned globals
 # -----------------------------------------------------------------------------
 ifeq ($(OS_NAME), ubuntu_18.04)
-	ASCIIDOCTOR_DEPENDENCIES := gem:asciidoctor-pdf:1.6.2 
+	ASCIIDOCTOR_DEPENDENCIES := gem:public_suffix:4.0.7 gem:asciidoctor-pdf:1.6.2 
+
 else
 	ASCIIDOCTOR_DEPENDENCIES := deb:asciidoctor deb:ruby-asciidoctor-pdf
 endif

@@ -7,6 +7,7 @@ load includes
   [[ ${output} =~ ' --help ' ]]
   [[ ${output} =~ ' --lang ' ]]
   [[ ${output} =~ ' --quiet ' ]]
+  [[ ${output} =~ ' --recompress ' ]]
   [[ ${output} =~ ' --version ' ]]
 }
 
@@ -15,6 +16,7 @@ load includes
   [[ ${output} =~ ' -h ' ]]
   [[ ${output} =~ ' -l ' ]]
   [[ ${output} =~ ' -q ' ]]
+  [[ ${output} =~ ' -R ' ]]
   [[ ${output} =~ ' -V ' ]]
 }
 

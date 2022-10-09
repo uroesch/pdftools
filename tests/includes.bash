@@ -5,13 +5,13 @@
 # -----------------------------------------------------------------------------
 export PATH=${BATS_TEST_DIRNAME}/../bin:${PATH}
 export IMG2PDF_VERSION="v0.2.6"
-export OCRPDF_VERSION="v0.4.1"
+export OCRPDF_VERSION="v0.5.0"
 export PDF2PDFA_VERSION="v0.1.2"
 export PDFMETA_VERSION="v0.1.5"
 export PDFRESIZE_VERSION="v0.0.5"
-export SCAN2PDF_VERSION="v0.4.2"
-export SCAN2JPG_VERSION="v0.4.2"
-export SCAN2PNG_VERSION="v0.4.2"
+export SCAN2PDF_VERSION="v0.5.0"
+export SCAN2JPG_VERSION="v0.5.0"
+export SCAN2PNG_VERSION="v0.5.0"
 export FILES_DIR=${BATS_TEST_DIRNAME}/files
 export SAMPLE_PDF=lorem-ipsum.pdf
 export TZ=UTC
