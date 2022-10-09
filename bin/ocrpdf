@@ -24,12 +24,14 @@ trap cleanup EXIT
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.4.1
+declare -r VERSION=0.5.0
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -- QUIET=
 declare -a PDF_FILES=()
 declare -- EXTENSION=pdf
+declare -- RECOMPRESS=false
+declare -- JPEG_RECOMPRESS=$(command -v jpeg-recompress 2>/dev/null)
 declare -a INCLUDES=(
   pdfcat
 )
@@ -73,6 +75,17 @@ function determine_ocr_languages() {
 
 # ------------------------------------------------------------------------------
 
+function recompress() {
+  local image="${1}"; shift;
+  [[ ${image} =~ \.jpg$ ]] || return 0 && :
+  [[ ${RECOMPRESS} == false ]] && return 0 || :
+  [[ -z ${JPEG_RECOMPRESS} ]] && return 0 || :
+  ${JPEG_RECOMPRESS} "${image}" "${image}.$$" |& grep 'New size' || :
+  mv "${image}.$$" "${image}"
+}
+
+# ------------------------------------------------------------------------------
+
 function run_ocr() {
   local filename="${1}"; shift;
   tesseract -l ${OCR_LANG} "${filename}" "${filename%%.*}" pdf >/dev/null 2>&1
@@ -110,6 +123,8 @@ function usage() {
                         E.g eng+deu for English and German
                         Default: ${OCR_LANG}
     -q | --quiet        Don't send display processed file names
+    -r | --recompress   Recompress JPEG images if 'jpeg-recompress' is present.
+                        DEFAULT: ${RECOMPRESS}
     -V | --version      Print version information and exit
 
   Description:
@@ -151,6 +166,7 @@ function ocr_pdfs() {
     meta="$(pdfcat::fetch_meta "${file}")"
     pdfimages -all "${file}" "${workname}" 2>/dev/null &&
     for image in ${workname}*; do
+      recompress "${image}"
       run_ocr ${image}
     done
     post_process_pdf "${file}" "${workname}" "${meta}"
@@ -189,11 +205,12 @@ function parse_options() {
  [[ ${#} -lt 1 ]] && usage 1
   while [[ ${#} -gt 0 ]]; do
     case ${1} in
-    -V|--version) version;;
-    -q|--quiet)   QUIET=true;;
-    -l|--lang)    shift; OCR_LANG=${1};;
-    -h|--help)    usage 0;;
-    *)            PDF_FILES+=( "${1}" );;
+    -h|--help)       usage 0;;
+    -l|--lang)       shift; OCR_LANG=${1};;
+    -q|--quiet)      QUIET=true;;
+    -r|--recompress) RECOMPRESS=true;;
+    -V|--version)    version;;
+    *)               PDF_FILES+=( "${1}" );;
     esac
     shift
   done
