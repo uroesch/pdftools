@@ -15,7 +15,7 @@ export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbi
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.4.2
+declare -r VERSION=0.5.0
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -- INTERACTIVE=false
@@ -44,6 +44,7 @@ declare -- SCANNER=""
 declare -- FIFO=""
 declare -- OCR=false
 declare -- OCR_LANG=eng
+declare -- JPEG_RECOMPRESS=$(command -v jpeg-recompress 2>/dev/null)
 declare -a DEPENDENCIES=(
   mkfifo
   scanimage
@@ -119,7 +120,7 @@ function pt2mm() {
 function set_default_quality() {
   case ${EXTENSION} in
   png)      IMAGE_QUALITY=9;;
-  jpeg|pdf) IMAGE_QUALITY=90 ;;
+  jpeg|pdf) IMAGE_QUALITY=90;;
   esac
 }
 
@@ -173,6 +174,16 @@ function process_image() {
     "${fifo}" \
     "${filename}" \
     &>/dev/null
+}
+
+# ------------------------------------------------------------------------------
+
+function postprocess_jpeg() {
+  local filename="${1}"; shift
+  [[ ${filename} =~ \.jpg$ ]] || return 0 && :
+  [[ -n ${JPEG_RECOMPRESS} ]] || return 0 && :
+  ${JPEG_RECOMPRESS} "${filename}" "${filename}.$$" &>/dev/null
+  mv "${filename}.$$" "${filename}"
 }
 
 # ------------------------------------------------------------------------------
@@ -366,6 +377,7 @@ function scan_image() {
   (
     process_image "${FIFO}" "${filename}"
     destroy_namedpipe "${FIFO}"
+    postprocess_jpeg "${filename}"
     postprocess_pdf "${filename}"
   ) &
 
