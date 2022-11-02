@@ -27,3 +27,23 @@ load includes
 @test "pdfresize: Common option -V" {
   pdfresize -V | grep -w ${PDFRESIZE_VERSION}
 }
+
+@test "pdfresize: Convert to default" {
+  ::pdfresize default
+}
+
+@test "pdfresize: Convert to screen" {
+  ::pdfresize screen
+}
+
+@test "pdfresize: Convert to ebook" {
+  ::pdfresize ebook
+}
+
+@test "pdfresize: Convert to printer" {
+  ::pdfresize printer
+}
+
+@test "pdfresize: Convert to prepress" {
+  ::pdfresize prepress
+}

@@ -22,7 +22,7 @@ export TZ=UTC
 function ::create-tempdir() {
   local prefix=${1:-pdftools-test};
   local tempdir=${BATS_TMPDIR}/${prefix}-$$
-  mkdir -p ${tempdir}
+  [[ -d ${tempdir} ]] || mkdir -p ${tempdir} && :
   export TEMP_DIR=${tempdir}
 }
 
@@ -41,10 +41,12 @@ function ::copy-sample-pdf() {
 }
 
 function ::pdf-to-images() {
-  local format=${1:-jpeg}
+  local format=${1}; shift;
+  local resolution=${1:-} 
   ::create-tempdir
   pdftocairo \
    -${format} \
+   ${resolution:+-r ${resolution}} \
    ${FILES_DIR}/${SAMPLE_PDF} \
    ${TEMP_DIR}/sample-image
 }
@@ -64,4 +66,24 @@ function ::img2pdf() {
   img2pdf \
     --output ${output} \
     $(find ${TEMP_DIR} -type f -name "*.${source}")
+}
+
+function ::pdf-size() {
+  local original="${1}"; shift;
+  local resized="${1}"; shift;
+  ::is-pdf "${resized}"
+  local size_before=$(du -b "${original}" | cut -f 1 )
+  local size_after=$(du -b "${resized}" | cut -f 1 )
+  (( size_before > size_after ))
+}
+
+function ::pdfresize() {
+  ::create-tempdir
+  local quality="${1}"
+  local pdf="${TEMP_DIR}/pdfresize-${quality}.pdf"
+  pdfresize \
+    --quality ${quality} \
+    --input "${FILES_DIR}/${SAMPLE_PDF}" \
+    --output "${pdf}"
+  ::pdf-size "${FILES_DIR}/${SAMPLE_PDF}" "${pdf}" 
 }
