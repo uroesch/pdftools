@@ -6,7 +6,7 @@
 export PATH=${BATS_TEST_DIRNAME}/../bin:${PATH}
 export IMG2PDF_VERSION="v0.2.6"
 export OCRPDF_VERSION="v0.5.0"
-export PDF2PDFA_VERSION="v0.1.2"
+export PDF2PDFA_VERSION="v0.1.3"
 export PDFMETA_VERSION="v0.1.5"
 export PDFRESIZE_VERSION="v0.0.5"
 export SCAN2PDF_VERSION="v0.5.0"
