@@ -14,9 +14,11 @@
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
-declare -r PDFCAT_VERSION=0.2.4
-declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
+declare -r PDFCAT_VERSION=0.3.0
 declare -r PDFCAT_SCRIPT=${0##*/}
+declare -r PDFCAT_AUTHOR="Urs Roesch <github@bun.ch>"
+declare -r PDFCAT_LICENSE="MIT"
+declare -r PRODUCER="pdfcat ${PDFCAT_VERSION}"
 declare -r ARGUMENTS=$#
 declare -r REQUIRE_PDFTK=2
 
@@ -49,10 +51,37 @@ function pdfcat::usage() {
   local exit_code=$1; shift;
   { 
     echo "  Usage:";
-    echo "    ${PDFCAT_SCRIPT} <pdf> <pdf> [..]";
+    echo "    ${PDFCAT_SCRIPT} [<options>] <pdf> <pdf> [..]";
+    echo "";
+    echo "  Options:";
+    echo "    -h | --help    This message.";
+    echo "    -V | --version Print version and exit.";
     echo "";
     exit ${exit_code};
   } 1>&2
+}
+
+# ------------------------------------------------------------------------------
+
+function pdfcat::version() {
+  printf "%s v%s\nCopyright (c) %s\nLicense - %s\n" \
+    "${PDFCAT_SCRIPT}" \
+    "${PDFCAT_VERSION}" \
+    "${PDFCAT_AUTHOR}" \
+    "${PDFCAT_LICENSE}"
+  exit 0
+}
+
+# ------------------------------------------------------------------------------
+
+function pdfcat::parse_options() {
+  while (( ${#} > 0 )); do
+    case ${1} in
+    -h|--help)    pdfcat::usage 0;;
+    -V|--version) pdfcat::version;;
+    esac
+    shift
+  done
 }
 
 # ------------------------------------------------------------------------------
@@ -83,7 +112,11 @@ function pdfcat::write_meta() {
 pdfcat::check_compatibility
 
 if [[ $0 == ${BASH_SOURCE} && ${ARGUMENTS} -lt 2 ]]; then
+  pdfcat::parse_options "${@}"
   pdfcat::usage 1;
 fi
 
 pdfcat::concat_pdf "$@"
+
+
+
