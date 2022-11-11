@@ -21,3 +21,15 @@ load includes
 @test "pdfcat: Common option -V" {
   pdfcat -V | grep -w ${PDFCAT_VERSION}
 }
+
+@test "pdfcat: Concat two PDFs" {
+  ::create-tempdir
+  input_pdf=${FILES_DIR}/${SAMPLE_PDF}
+  output_pdf=${TEMP_DIR}/output.pdf
+  pdfcat "${input_pdf}" "${input_pdf}" > "${output_pdf}"
+  meta=$(pdfinfo "${output_pdf}")
+  [[ ${meta} =~ Title:.*Lorem\ ipsum ]]
+  [[ ${meta} =~ Producer:.*Wikisource ]]
+  [[ ${meta} =~ Pages:.*10 ]]
+  [[ ${meta} =~ Page\ size:.*A4 ]]
+}
