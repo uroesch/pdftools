@@ -217,7 +217,12 @@ pdfcat myscan*.pdf > merged.pdf
 === Usage
 
 ----
-pdfcat <pdf> <pdf> [..]
+  Usage:
+    pdfcat [<options>] <pdf> <pdf> [..]
+
+  Options:
+    -h | --help    This message.
+    -V | --version Print version and exit.
 ----
 
 <<<
