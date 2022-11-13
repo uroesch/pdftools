@@ -101,6 +101,14 @@ function pdfcat::concat_pdf() {
 
 # ------------------------------------------------------------------------------
 
+function pdfcat::update_producer() {
+  local meta="${1}";
+  sed "s/^InfoKey: Producer,+1/ { s/\(InfoValue:\).*/\1 ${PRODUCER}/; }" \
+    <<< "${meta}"
+}
+
+# ------------------------------------------------------------------------------
+
 function pdfcat::write_meta() {
   local meta="$1"; shift;
   pdftk - update_info_utf8 <( echo "${meta}" ) output -
@@ -117,6 +125,3 @@ if [[ $0 == ${BASH_SOURCE} && ${ARGUMENTS} -lt 2 ]]; then
 fi
 
 pdfcat::concat_pdf "$@"
-
-
-
