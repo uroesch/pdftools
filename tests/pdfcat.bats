@@ -27,9 +27,8 @@ load includes
   input_pdf=${FILES_DIR}/${SAMPLE_PDF}
   output_pdf=${TEMP_DIR}/output.pdf
   pdfcat "${input_pdf}" "${input_pdf}" > "${output_pdf}"
-  meta=$(pdfinfo "${output_pdf}")
-  [[ ${meta} =~ Title:.*Lorem\ ipsum ]]
-  [[ ${meta} =~ Producer:.*Wikisource ]]
-  [[ ${meta} =~ Pages:.*10 ]]
-  [[ ${meta} =~ Page\ size:.*A4 ]]
+  ::pdf-info "${output_pdf}" 'Title' "Lorem ipsum"
+  ::pdf-info "${output_pdf}" 'Producer' 'Wikisource'
+  ::pdf-info "${output_pdf}" 'Pages' '10'
+  ::pdf-info "${output_pdf}" 'Page size' 'A4'
 }

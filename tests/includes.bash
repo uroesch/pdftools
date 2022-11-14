@@ -38,7 +38,7 @@ function ::is-pdf() {
 
 function ::copy-sample-pdf() {
   ::create-tempdir
-  cp ${FILES_DIR}/${TEST_PDF} ${TEMP_DIR}
+  cp ${FILES_DIR}/${SAMPLE_PDF} ${TEMP_DIR}
 }
 
 function ::pdf-to-images() {
@@ -87,4 +87,11 @@ function ::pdfresize() {
     --input "${FILES_DIR}/${SAMPLE_PDF}" \
     --output "${pdf}"
   ::pdf-size "${FILES_DIR}/${SAMPLE_PDF}" "${pdf}" 
+}
+
+function ::pdf-info() {
+  local pdf="${1}"; shift;
+  local key="${1}"; shift;
+  local value="${1}"; shift;
+  LC_ALL=C TZ=UTC pdfinfo "${pdf}" | grep "${key^}:.*${value}"
 }
