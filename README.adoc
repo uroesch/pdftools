@@ -328,27 +328,51 @@ NOTE: This is early beta and all the meta data in the PDF will be lost!
 [[pdf2pdfa-examples]]
 === Examples
 
-.Convert a pdf file `sample.pdf` to a PDF/A called `sample_a.pdf`
+.Convert pdf file `sample.pdf` to a PDF/A-2 named `sample_a.pdf`
 ----
 pdf2pdfa sample.pdf
 ----
 
-.Convert a pdf file `sample.pdf` to a PDF/A called `sample_pdfa.pdf`
+.Convert pdf file `sample.pdf` to a PDF/A-2 named `sample_pdfa.pdf`
 ----
 pdf2pdfa --suffix _pdfa sample.pdf
 ----
+
+.Convert pdf file `sample.pdf` to a PDF/A-1 named `sample_a.pdf`
+----
+pdf2pdfa --level 1 sample.pdf
+----
+
+.Convert pdf file `sample.pdf` to a PDF/A-3 exiting on errors.
+----
+pdf2pdfa --level 3 --strict sample.pdf
+----
+
+.Convert pdf file `sample.pdf` to a PDF/A-2 with color model CMYK.
+----
+pdf2pdfa --color-model CMYK sample.pdf
+----
+
 
 [[pdf2pdfa-usage]]
 == Usage
 
 -----
   Usage:
-    pdf2pdfa [-h] [-s <suffix>] <pdf_file> [<pdf_file> [..]]
+    pdf2pdfa [<options>] <pdf_file> [<pdf_file> [..]]
 
   Options:
-    -h | --help             This message
-    -s | --suffix <suffix>  Append <suffix> to filename
-                            Default '_a'
+    -c | --color-model <model> Color model to use for the conversion.
+                               Valid input is RGB or CMYK.
+                               Default: RGB
+    -h | --help                This message
+    -l | --level <number>      PDF-A specification level to use.
+                               Valid input is 1 (A-1), 2 (A-2) and 3 (A-3).
+                               Default: 2
+    -S | --strict              Exit if errors are encountered during conversion.
+    -s | --suffix <suffix>     Append <suffix> to filename
+                               Default '_a'
+    -V | --version             Display version and exit.
 -----
 
 <<<
