@@ -1,5 +1,7 @@
 # include file for bats tests
 
+trap ::cleanup EXIT
+
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
@@ -13,18 +15,25 @@ export PDFRESIZE_VERSION="v0.0.5"
 export SCAN2PDF_VERSION="v0.5.0"
 export SCAN2JPG_VERSION="v0.5.0"
 export SCAN2PNG_VERSION="v0.5.0"
+export GS_VERSION=$(gs --version | awk -F . '{ print $1$2 }')
 export FILES_DIR=${BATS_TEST_DIRNAME}/files
 export SAMPLE_PDF=lorem-ipsum.pdf
+export BASE_TEMP_DIR="${HOME}/tmp"
+export TEMP_PREFIX=pdftools-test
 export TZ=UTC
 
 # -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
+function ::cleanup() {
+  rm -rf ${BASE_TEMP_DIR}/${TEMP_PREFIX}-[0-9]*
+}
+
 function ::create-tempdir() {
   local prefix=${1:-pdftools-test};
-  local tempdir=${BATS_TMPDIR}/${prefix}-$$
-  [[ -d ${tempdir} ]] || mkdir -p ${tempdir} && :
-  export TEMP_DIR=${tempdir}
+  local temp_dir=${BASE_TEMP_DIR}/${TEMP_PREFIX}-$$
+  [[ -d ${temp_dir} ]] || mkdir -p ${temp_dir} && :
+  export TEMP_DIR="${temp_dir}"
 }
 
 function ::cleanup-tempdir() {
@@ -43,7 +52,7 @@ function ::copy-sample-pdf() {
 
 function ::pdf-to-images() {
   local format=${1}; shift;
-  local resolution=${1:-} 
+  local resolution=${1:-}
   ::create-tempdir
   pdftocairo \
    -${format} \
@@ -86,7 +95,7 @@ function ::pdfresize() {
     --quality ${quality} \
     --input "${FILES_DIR}/${SAMPLE_PDF}" \
     --output "${pdf}"
-  ::pdf-size "${FILES_DIR}/${SAMPLE_PDF}" "${pdf}" 
+  ::pdf-size "${FILES_DIR}/${SAMPLE_PDF}" "${pdf}"
 }
 
 function ::pdf-info() {
