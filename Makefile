@@ -103,7 +103,6 @@ clean:
 # Run tests
 # -----------------------------------------------------------------------------
 test:
-	bash test/test-pdftools
 	bats tests/*bats
 
 test-bash:

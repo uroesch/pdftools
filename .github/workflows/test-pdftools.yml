@@ -42,7 +42,14 @@ jobs:
       shell: bash
       run: >
         sudo apt-get update;
-        sudo apt-get -y install imagemagick tesseract-ocr poppler-utils ghostscript 
+        sudo apt-get -y install 
+        bats
+        ghostscript
+        imagemagick
+        poppler-utils
+        tesseract-ocr
+        sane-utils
+        ;
 
     - name: Adjust ImageMagick configuration
       shell: bash
@@ -58,4 +65,4 @@ jobs:
       shell: bash
       run: |
         export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
-        bash -x test/test-pdftools
+        make test
