@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------
 # Build documents for pdftools
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.0 
+# Version: 0.1.1
 # -----------------------------------------------------------------------------
 name: create-docs
 
 on:
   push:
-    branches: 
+    branches:
     - workflow/*
   pull_request:
     branches:
@@ -27,7 +27,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Create documents
       shell: bash

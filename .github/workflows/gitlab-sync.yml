@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Sync changes to gitlab.com
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.0
+# Version: 0.1.1
 # -----------------------------------------------------------------------------
 name: gitlab-sync
 
@@ -13,7 +13,7 @@ jobs:
   gitlab-sync:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
