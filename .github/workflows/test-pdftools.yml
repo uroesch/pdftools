@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------
 # Test pdftools
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.2.0 
+# Version: 0.2.1
 # -----------------------------------------------------------------------------
 name: test-pdftools
 
 on:
   push:
-    branches: 
+    branches:
     - workflow/*
   pull_request:
     branches:
@@ -31,7 +31,7 @@ jobs:
       shell: bash
       run: >
         sudo snap install pdftk
-    
+
     - name: Install pdftk on non Ubuntu 18.04
       if: matrix.os != 'ubuntu-18.04'
       shell: bash
@@ -42,7 +42,7 @@ jobs:
       shell: bash
       run: >
         sudo apt-get update;
-        sudo apt-get -y install 
+        sudo apt-get -y install
         bats
         ghostscript
         imagemagick
@@ -53,13 +53,13 @@ jobs:
 
     - name: Adjust ImageMagick configuration
       shell: bash
-      run: > 
+      run: >
         test -f /etc/ImageMagick-6/policy.xml &&
         sudo sed -i '/pattern="PDF"/s/rights="none"/rights="read\|write"/'
         /etc/ImageMagick-6/policy.xml
-        
+
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Test pdftools functionality
       shell: bash

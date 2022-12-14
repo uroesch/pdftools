@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Verify bash compatibility
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.0
+# Version: 0.1.1
 # -----------------------------------------------------------------------------
 name: bash-compatibility
 
@@ -34,7 +34,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         lfs: true
 
