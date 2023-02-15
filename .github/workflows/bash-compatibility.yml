@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Verify bash compatibility
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.1
+# Version: 0.2.0
 # -----------------------------------------------------------------------------
 name: bash-compatibility
 
@@ -17,40 +17,53 @@ on:
 jobs:
   bash-compatibility:
     timeout-minutes: 15
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: bash:${{ matrix.bash }}
     strategy:
       fail-fast: false
       matrix:
-        os:
-        - ubuntu-latest
         bash:
-        - '4.0'
-        - '4.1'
-        - '4.2'
-        - '4.3'
-        - '4.4'
-        - '5.0'
-        - '5.1'
+          - '4.0'
+          - '4.1'
+          - '4.2'
+          - '4.3'
+          - '4.4'
+          - '5.0'
+          - '5.1'
+          - '5.2'
 
     steps:
+    - name: Install apk dependencies
+      shell: bash
+      run: |
+        apk add \
+          bats \
+          curl \
+          file \
+          git \
+          git-lfs \
+          grep \
+          imagemagick \
+          make \
+          openjdk11-jre-headless \
+          poppler-utils \
+          sane-utils \
+          tesseract-ocr
+
+    - name: Install pdftk
+      shell: bash
+      run: >
+        curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' &&
+        mv pdftk-all.jar /usr/lib/ &&
+        echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$@\"" > /usr/bin/pdftk &&
+        chmod 755 /usr/bin/pdftk
+
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         lfs: true
 
-    - name: Loop test
+    - name: Check bash compatibilty
       shell: bash
-      run: |
-        function install-dependencies() {
-          apk add bats curl file grep imagemagick make openjdk11-jre-headless poppler-utils sane-utils tesseract-ocr &&
-          curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' &&
-          mv pdftk-all.jar /usr/lib/ &&
-          echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$@\"" > /usr/bin/pdftk &&
-          chmod 755 /usr/bin/pdftk
-        }
-        docker run \
-          --tty \
-          --volume $(pwd):/pdftools \
-          --workdir /pdftools \
-          bash:${{ matrix.bash }} \
-          bash -c "$(declare -f install-dependencies); install-dependencies && make test"
+      run: make test

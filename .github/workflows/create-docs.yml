@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Build documents for pdftools
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.1
+# Version: 0.1.2
 # -----------------------------------------------------------------------------
 name: create-docs
 
@@ -31,5 +31,4 @@ jobs:
 
     - name: Create documents
       shell: bash
-      run: >
-        sudo make docs
+      run: sudo make docs
