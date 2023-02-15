@@ -24,9 +24,10 @@ BASH_VERSIONS := 4.0 4.1 4.2 4.3 4.4 5.0 5.1 5.2-rc
 # Contidionally assigned globals
 # -----------------------------------------------------------------------------
 ifeq ($(OS_NAME), ubuntu_18.04)
-	ASCIIDOCTOR_DEPENDENCIES := gem:public_suffix:4.0.7 gem:asciidoctor-pdf:1.6.2 
-
+	ASCIIDOCTOR_PREFIX := bundler exec
+	ASCIIDOCTOR_DEPENDENCIES := deb:ruby-bundler gem:asciidoctor-pdf:1.6.2 
 else
+	ASCIIDOCTOR_PREFIX :=
 	ASCIIDOCTOR_DEPENDENCIES := deb:asciidoctor deb:ruby-asciidoctor-pdf
 endif
 
@@ -48,11 +49,8 @@ asciidoctor_dependencies:
 			fi
 			;;
 		gem)
-			if gem list $${name} | grep -q ^$${name}; then
-				echo "Ruby Gem $${name} already installed"
-			else  
-				gem install $${name} $${version:+--version $${version}}
-			fi
+			[[ -f Gemfile ]] || bundler init && :
+			bundler add "$${name}" --version "$${version}"
 			;;
 		esac
 	done
@@ -60,13 +58,12 @@ asciidoctor_dependencies:
 
 docs/README.html: README.adoc
 	@echo "Build HTML doc $<"
-	asciidoctor -D docs $<
+	$(ASCIIDOCTOR_PREFIX) asciidoctor -D docs $<
 	@echo $(DIVIDER)
 
 docs/README.pdf: README.adoc
 	@echo "Build PDF doc $<"
-	ruby --version
-	asciidoctor-pdf --trace -D docs $<
+	$(ASCIIDOCTOR_PREFIX) asciidoctor-pdf --trace -D docs $<
 	@echo $(DIVIDER)
 
 docs: asciidoctor_dependencies docs/README.html docs/README.pdf
@@ -99,6 +96,8 @@ user_uninstall:
 clean:
 	test -d docs && \
 		find docs \( -name "*.pdf" -or -name "*.html" \) -print -delete
+	test -f Gemfile && rm Gemfile
+	test -f Gemfile.lock && rm Gemfile.lock
 # -----------------------------------------------------------------------------
 # Run tests
 # -----------------------------------------------------------------------------
@@ -135,5 +134,3 @@ test-bash:
 			bash:$${version} \
 			bash -c "$$(declare -f setup); setup &>/dev/null && make test";
 	done
-
-# vim: shiftwidth=2 noexpandtab :
