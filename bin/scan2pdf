@@ -15,7 +15,7 @@ export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbi
 # Globals
 # ------------------------------------------------------------------------------
 declare -r SCRIPT=${0##*/}
-declare -r VERSION=0.5.0
+declare -r VERSION=0.6.0
 declare -r AUTHOR="Urs Roesch <github@bun.ch>"
 declare -r LICENSE="MIT"
 declare -- INTERACTIVE=false
@@ -215,7 +215,7 @@ function set_image_options() {
   ## set image magick options
   case ${TYPE,,[a-z]} in
   d*)
-    IMAGE_OPT="( -despeckle -level 18%,75%,1.0 )"
+    IMAGE_OPT="( -despeckle -auto-level )"
     ;;
   i*)
     IMAGE_OPT="( -despeckle -level 15%,75%,1.0 )"
