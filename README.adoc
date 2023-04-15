@@ -137,9 +137,12 @@ img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 Runs PDFs through OCR and saves the output as a text searchable PDF
 with the same name.
 
-NOTE: Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed
-image per page. LZW compressed images are being converted to ZIP compressed
-one during the OCR process.
+[NOTE] 
+--
+Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed image
+per page. LZW compressed images are being converted to ZIP compressed one
+during the OCR process.
+--
 
 License:: MIT
 Requires:: bash, pdfcat, pdfimages (poppler-utils), pdftk, tesseract
@@ -267,6 +270,13 @@ pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
       -V | --version            Display version and exit
 ----
 
+[NOTE]
+--
+On ubuntu 18.04 (bionic) `pdfmeta` works only with the snap or with version
+3.2.x of `pdftk-java`. With every other version of pdftk `CreationDate` and
+`ModDate` will not work at all. The other meta data field do work however.
+--
+
 <<<
 
 [[pdfresize]]
@@ -274,8 +284,11 @@ pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
 
 A wrapper around `ghostscript` to reduce the size of a scanned document
 
-NOTE: pdfresize is very likely not working with PDF documents containing
-https://en.wikipedia.org/wiki/JBIG2[JBIG2] images
+[NOTE]
+--
+pdfresize is very likely not working with PDF documents containing
+https://en.wikipedia.org/wiki/JBIG2[JBIG2] images.
+--
 
 License:: MIT
 Requires:: bash, ghostscript
@@ -323,7 +336,10 @@ pdfresize --quality screen --input input.pdf --output output.pdf
 
 Small script to convert a PDF to PDF/A type.
 
-NOTE: This is early beta and all the meta data in the PDF will be lost!
+[NOTE]
+--
+This is early beta and all the meta data in the PDF will be lost!
+--
 
 [[pdf2pdfa-examples]]
 === Examples

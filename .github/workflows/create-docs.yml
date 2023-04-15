@@ -17,18 +17,30 @@ on:
 jobs:
   create-docs:
     timeout-minutes: 10
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.container }}
     strategy:
       matrix:
-        os:
-        - ubuntu-22.04
-        - ubuntu-20.04
-        - ubuntu-18.04
+        container:
+          - ubuntu:22.04
+          - ubuntu:20.04
+          - ubuntu:18.04
+          - debian:11
+          - debian:10
+    env:
+      DEBIAN_FRONTEND: noninteractive
 
     steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt update
+        apt install -y make sudo
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Create documents
       shell: bash
-      run: sudo make docs
+      run: make docs
