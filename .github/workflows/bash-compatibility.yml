@@ -32,6 +32,8 @@ jobs:
           - '5.0'
           - '5.1'
           - '5.2'
+    env:
+      PDFTK_URL: https://gitlab.com/pdftk-java/pdftk/-/package_files/53763921/download
 
     steps:
     - name: Install apk dependencies
@@ -54,9 +56,8 @@ jobs:
     - name: Install pdftk
       shell: bash
       run: >
-        curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' &&
-        mv pdftk-all.jar /usr/lib/ &&
-        echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$@\"" > /usr/bin/pdftk &&
+        curl -sJL -o /usr/lib/pdftk-all.jar "${PDFTK_URL}" &&
+        printf "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$@\"" > /usr/bin/pdftk &&
         chmod 755 /usr/bin/pdftk
 
     - name: Checkout repository

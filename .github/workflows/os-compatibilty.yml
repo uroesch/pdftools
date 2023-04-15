@@ -1,0 +1,96 @@
+# -----------------------------------------------------------------------------
+# Test pdftools
+# Author: Urs Roesch https://github.com/uroesch
+# Version: 0.3.0
+# -----------------------------------------------------------------------------
+name: os-compatibility
+
+on:
+  push:
+    branches:
+    - workflow/*
+  pull_request:
+    branches:
+    - master
+    - main
+
+jobs:
+  os-compatibility:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.name }}:${{ matrix.release }}
+    strategy:
+      matrix:
+        include:
+          - { name: ubuntu, release: 22.04, family: debian }
+          - { name: ubuntu, release: 20.04, family: debian }
+          - { name: ubuntu, release: 18.04, family: debian }
+        # - { name: ubuntu, release: 16.04, family: debian }
+          - { name: debian, release: 11,    family: debian }
+          - { name: debian, release: 10,    family: debian }
+        # - { container: rockylinux:9, family: redhat }
+        # - { container: rockylinux:8, family: redhat }
+        # - { container: almalinux:9,  family: redhat }
+        # - { container: almalinux:8,  family: redhat }
+        
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      PDFTK_URL: https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false 
+
+    steps:
+    - name: Install dependencies other than pdftk
+      if: matrix.family == 'debian'
+      shell: bash
+      run: >
+        apt-get update;
+        apt-get -y install
+        bats
+        curl
+        file
+        gawk
+        ghostscript
+        git
+        imagemagick
+        make
+        poppler-utils
+        sane-utils
+        tesseract-ocr
+        ;
+
+    - name: Install pdftk on non Ubuntu 18.04
+      if: >
+        matrix.family == 'debian' &&
+        matrix.release != '18.04'
+      shell: bash
+      run: apt-get -y install pdftk
+
+    - name: Install pdftk on Ubuntu 18.04
+      if: >
+        matrix.name == 'ubuntu' &&
+        matrix.release == '18.04'
+      shell: bash
+      run: |
+         curl -sJL -o /usr/lib/pdftk-all.jar "${PDFTK_URL}" && \
+         printf "%s\n" \
+           '#!/usr/bin/env sh' \
+           'java -cp /usr/lib/pdftk-all.jar com.gitlab.pdftk_java.pdftk "$@"' \
+           > /usr/bin/pdftk
+         chmod 755 /usr/bin/pdftk
+         apt install -y openjdk-11-jre-headless
+
+    - name: Adjust ImageMagick configuration
+      shell: bash
+      run: >
+        test -f /etc/ImageMagick-6/policy.xml &&
+        sed -i '/pattern="PDF"/s/rights="none"/rights="read\|write"/'
+        /etc/ImageMagick-6/policy.xml
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Test pdftools functionality
+      shell: bash
+      run: |
+        export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
+        make test

@@ -13,8 +13,9 @@ MAKEFLAGS += --no-builtin-rules
 # Globals
 # -----------------------------------------------------------------------------
 DIVIDER       := $$(printf "%0.1s" -{1..80})
-OS_FAMILY     := $(shell lsb_release -i -s | tr "A-Z" "a-z")
-OS_RELEASE    := $(shell lsb_release -r -s)
+OS_REL        := /etc/os-release
+OS_FAMILY     := $(shell sed -n '/^ID=/{s/"//g;s/.*=//;p}' $(OS_REL))
+OS_RELEASE    := $(shell sed -n '/^VERSION_ID=/{s/"//g;s/.*=//;p}' $(OS_REL))
 OS_NAME       := $(OS_FAMILY)_$(OS_RELEASE)
 USER_BIN      := $(HOME)/bin
 REPO_NAME     := $(shell basename $(CURDIR))
