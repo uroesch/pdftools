@@ -272,9 +272,12 @@ pdfmeta --creation-date "2017-01-01 22:30:45" unicorn.pdf
 
 [NOTE]
 --
-On ubuntu 18.04 (bionic) `pdfmeta` works only with the snap or with version
-3.2.x of `pdftk-java`. With every other version of pdftk `CreationDate` and
-`ModDate` will not work at all. The other meta data field do work however.
+On Ubuntu 18.04 (bionic) `pdfmeta` works only with the
+https://snapcraft.io/pdftk[snap] or with version 3.2.x of
+https://gitlab.com/pdftk-java/pdftk[`pdftk-java`]. With every other version of
+pdftk `CreationDate` and `ModDate` will not work when running the unit tests.
+The changed PDF has no problem but `pdfinfo` from the `poppler-utils` package
+can't handle the changed entries and reports them as empty.
 --
 
 <<<
