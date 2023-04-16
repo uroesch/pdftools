@@ -26,6 +26,8 @@ ifdef::env-github[]
 :warning-caption:   :warning:
 :no-support:        :heavy_multiplication_x:
 :supported:         :heavy_check_mark:
+:no-data:           :grey_question:
+:not-tested:        :heavy_exclamation:
 endif::env-github[]
 
 image:{workflow_url}/bash-compatibility/badge.svg[
@@ -86,9 +88,11 @@ To uninstall everything the target `user_uninstall` can be used.
 == Comptibility
 
 === Bash compatibilty
+
 [cols="1>,1<",options=header]
 |===
-| Bash version | Test Result
+| Bash version | Support
+
 | 3.0          | {no-support}
 | 3.1          | {no-support}
 | 3.2          | {no-support}
@@ -102,11 +106,34 @@ To uninstall everything the target `user_uninstall` can be used.
 | 5.2          | {supported}
 |===
 
+=== OS compatibilty
+
+[cols="1<,1<,1<",options=header]
+|===
+| OS Name      | OS Version     | Support
+
+| Alma Linux   | 8              | {not-tested}
+| Alma Linux   | 9              | {not-tested}
+| CentOS       | 7              | {not-tested}
+| Debian       | 8 (jessie)     | {not-tested}
+| Debian       | 9 (stretch)    | {not-tested}
+| Debian       | 10 (buster)    | {supported}
+| Debian       | 11 (bullseye)  | {supported}
+| Ubuntu       | 16.04 (xenial) | {not-tested}
+| Ubuntu       | 18.04 (bionic) | {supported}
+| Ubuntu       | 20.04 (bionic) | {supported}
+| Ubuntu       | 22.04 (bionic) | {supported}
+| Rocky Linux  | 8              | {not-tested}
+| Rocky Linux  | 9              | {not-tested}
+|===
+
 
 Legend:
 
 * {supported} Fully supported and tested
 * {no-support} Not supported
+* {not-tested} Not tested
+* {no-data}    No data available
 
 [[img2pdf]]
 == img2pdf
