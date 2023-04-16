@@ -86,7 +86,7 @@ To uninstall everything the target `user_uninstall` can be used.
 == Comptibility
 
 === Bash compatibilty
-[cols="1,2",options=header]
+[cols="1>,1<",options=header]
 |===
 | Bash version | Test Result  |
 | 3.0          | {no-support} |
