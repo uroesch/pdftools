@@ -15,10 +15,10 @@ ifdef::env-gitlab[]
 :experimental: 
 :base-url:   https://gitlab.com/{git-user}/{repo-name}
 :email:      gitlab@bun.ch
-:no-support:   
-:supported:  
-:no-data:    
-:not-tested: 
+:no-support: icon:not-support[]
+:supported:  icon:supoort[]
+:no-data:    icon:no-data[]
+:not-tested: icon:not-tested[]
 endif::env-gitlab[]
 ifdef::env-github[]
 :base-url:          https://github.com/{git-user}/{repo-name}
