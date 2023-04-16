@@ -27,7 +27,7 @@ ifdef::env-github[]
 :no-support:        :heavy_multiplication_x:
 :supported:         :heavy_check_mark:
 :no-data:           :question:
-:not-tested:        :interobang:
+:not-tested:        :interrobang:
 endif::env-github[]
 
 image:{workflow_url}/bash-compatibility/badge.svg[
