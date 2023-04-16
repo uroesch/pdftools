@@ -14,6 +14,7 @@
 ifdef::env-gitlab[]
 :base-url:   https://gitlab.com/{git-user}/{repo-name}
 :email:      gitlab@bun.ch
+:icon-set:   fa
 :no-support: icon:heavy_multiplication_x[]
 :supported:  icon:flag[]
 :no-data:    icon:question[]
