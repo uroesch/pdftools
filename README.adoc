@@ -53,9 +53,9 @@ endif::env-github,env-gitlab[]
 
 A collection of PDF command line tools and wrappers for Linux written in Bash
 Shell script. These are generally speaking convenience tools so one does not
-have to remember very long and cryptic options and switches. 
+have to remember very long and cryptic options and switches.
 
-The heavy lifting is done by backend tools such as pdftk, ghostscript and the 
+The heavy lifting is done by backend tools such as pdftk, ghostscript and the
 poppler utils are used.
 
 [[installation]]
@@ -88,22 +88,22 @@ To uninstall everything the target `user_uninstall` can be used.
 === Bash compatibilty
 [cols="1>,1<",options=header]
 |===
-| Bash version | Test Result  |
-| 3.0          | {no-support} |
-| 3.1          | {no-support} |
-| 3.2          | {no-support} |
-| 4.0          | {supported}  |
-| 4.1          | {supported}  |
-| 4.2          | {supported}  |
-| 4.3          | {supported}  |
-| 4.4          | {supported}  |
-| 5.0          | {supported}  |
-| 5.1          | {supported}  |
-| 5.2          | {supported}  |
+| Bash version | Test Result
+| 3.0          | {no-support}
+| 3.1          | {no-support}
+| 3.2          | {no-support}
+| 4.0          | {supported}
+| 4.1          | {supported}
+| 4.2          | {supported}
+| 4.3          | {supported}
+| 4.4          | {supported}
+| 5.0          | {supported}
+| 5.1          | {supported}
+| 5.2          | {supported}
 |===
 
 
-Legend: 
+Legend:
 
 * {supported} Fully supported and tested
 * {no-support} Not supported
@@ -166,7 +166,7 @@ img2pdf --output output.pdf --rotate 180 page1.png page2.jpg
 Runs PDFs through OCR and saves the output as a text searchable PDF
 with the same name.
 
-[NOTE] 
+[NOTE]
 --
 Only works with PDFs comprised of a single JPEG, LZW or ZIP compressed image
 per page. LZW compressed images are being converted to ZIP compressed one
