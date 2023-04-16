@@ -134,6 +134,8 @@ To uninstall everything the target `user_uninstall` can be used.
 
 Legend:
 
+:heavy_minus_sign:
+
 * {supported} Fully supported and tested
 * {no-support} Not supported
 * {not-tested} Not tested
