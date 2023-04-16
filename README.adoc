@@ -14,6 +14,10 @@
 ifdef::env-gitlab[]
 :base-url:   https://gitlab.com/{git-user}/{repo-name}
 :email:      gitlab@bun.ch
+:no-support: :heavy_multiplication_x:
+:supported:  :heavy_check_mark:
+:no-data:    :question:
+:not-tested: :heavy_minus_sign:
 endif::env-gitlab[]
 ifdef::env-github[]
 :base-url:          https://github.com/{git-user}/{repo-name}
@@ -27,7 +31,7 @@ ifdef::env-github[]
 :no-support:        :heavy_multiplication_x:
 :supported:         :heavy_check_mark:
 :no-data:           :question:
-:not-tested:        :interrobang:
+:not-tested:        :heavy_minus_sign:
 endif::env-github[]
 
 image:{workflow_url}/bash-compatibility/badge.svg[
