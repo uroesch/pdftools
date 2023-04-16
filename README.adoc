@@ -12,11 +12,11 @@
 :git-user: uroesch
 :repo-name: pdftools
 ifdef::env-gitlab[]
+:experimental: 
 :base-url:   https://gitlab.com/{git-user}/{repo-name}
 :email:      gitlab@bun.ch
-:icon-set:   fa
 :no-support: icon:heavy_multiplication_x[]
-:supported:  icon:flag[]
+:supported:  f03e
 :no-data:    icon:question[]
 :not-tested: icon:cancel[]
 endif::env-gitlab[]
