@@ -17,20 +17,23 @@ ifdef::env-gitlab[]
 endif::env-gitlab[]
 ifdef::env-github[]
 :base-url:          https://github.com/{git-user}/{repo-name}
+:workflow_url:      {base-url}/workflows
 :email:             github@bun.ch
 :tip-caption:       :bulb:
 :note-caption:      :information_source:
 :important-caption: :heavy_exclamation_mark:
 :caution-caption:   :fire:
 :warning-caption:   :warning:
+:no-support:        :heavy_multiplication_x:
+:supported:         :heavy_check_mark:
 endif::env-github[]
 
-image:{base-url}/workflows/bash-compatibility/badge.svg[
+image:{workflow_url}/bash-compatibility/badge.svg[
   title="bash-compatilibity",
   link="{base-url}/actions?query=workflow:bash-compatilbility"
 ]
-image:{base-url}/workflows/test-pdftools/badge.svg[
-  title="test-pdftools",
+image:{base-url}/workflows/os-compatibility/badge.svg[
+  title="os-compatibity",
   link="{base-url}/actions?query=workflow:test-pdftools"
 ]
 image:{base-url}/workflows/create-docs/badge.svg[
@@ -78,6 +81,32 @@ Install pdftools under /home/<user>/bin
 ----
 
 To uninstall everything the target `user_uninstall` can be used.
+
+[[compatibility-matrix]]
+== Comptibility
+
+=== Bash compatibilty
+[cols="1,2",options=header]
+|===
+| Bash version | Test Result  |
+| 3.0          | {no-support} |
+| 3.1          | {no-support} |
+| 3.2          | {no-support} |
+| 4.0          | {supported}  |
+| 4.1          | {supported}  |
+| 4.2          | {supported}  |
+| 4.3          | {supported}  |
+| 4.4          | {supported}  |
+| 5.0          | {supported}  |
+| 5.1          | {supported}  |
+| 5.2          | {supported}  |
+|===
+
+
+Legend: 
+
+* {supported} Fully supported and tested
+* {no-support} Not supported
 
 [[img2pdf]]
 == img2pdf
