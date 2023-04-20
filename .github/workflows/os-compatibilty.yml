@@ -14,8 +14,11 @@ on:
     - master
     - main
 
+env:
+  PDFTK_URL: https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false 
+
 jobs:
-  os-compatibility:
+  debian:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
@@ -23,24 +26,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - { name: ubuntu, release: 22.04, family: debian }
-          - { name: ubuntu, release: 20.04, family: debian }
-          - { name: ubuntu, release: 18.04, family: debian }
-        # - { name: ubuntu, release: 16.04, family: debian }
-          - { name: debian, release: 11,    family: debian }
-          - { name: debian, release: 10,    family: debian }
-        # - { container: rockylinux:9, family: redhat }
-        # - { container: rockylinux:8, family: redhat }
-        # - { container: almalinux:9,  family: redhat }
-        # - { container: almalinux:8,  family: redhat }
+          - { name: ubuntu, release: 22.04 }
+          - { name: ubuntu, release: 20.04 }
+          - { name: ubuntu, release: 18.04 }
+        # - { name: ubuntu, release: 16.04 }
+          - { name: debian, release: 11 }
+          - { name: debian, release: 10 }
         
     env:
       DEBIAN_FRONTEND: noninteractive
-      PDFTK_URL: https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false 
 
     steps:
     - name: Install dependencies other than pdftk
-      if: matrix.family == 'debian'
       shell: bash
       run: >
         apt-get update;
@@ -59,9 +56,7 @@ jobs:
         ;
 
     - name: Install pdftk on non Ubuntu 18.04
-      if: >
-        matrix.family == 'debian' &&
-        matrix.release != '18.04'
+      if: matrix.release != '18.04'
       shell: bash
       run: apt-get -y install pdftk
 
@@ -93,4 +88,65 @@ jobs:
       shell: bash
       run: |
         export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
+        make test
+
+
+  redhat:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.name }}:${{ matrix.release }}
+    strategy:
+      matrix:
+        include:
+          #- { name: centos,     release: 7 }
+          - { name: rockylinux, release: 8 }
+          #- { name: rockylinux, release: 9 }
+        
+    steps:
+    - name: Install dependencies other than pdftk
+      shell: bash
+      run: >
+        yum -y install epel-release;
+        yum -y --allowerasing install
+        ImageMagick
+        bats
+        coreutils 
+        curl
+        file
+        gawk
+        ghostscript
+        git
+        java-11-openjdk-headless
+        make
+        poppler-utils
+        sane-frontends
+        tesseract
+        ;
+
+    - name: Install pdftk
+      shell: bash
+      run: |
+         curl -sJL -o /usr/lib/pdftk-all.jar "${PDFTK_URL}" && \
+         printf "%s\n" \
+           '#!/usr/bin/env sh' \
+           'java -cp /usr/lib/pdftk-all.jar com.gitlab.pdftk_java.pdftk "$@"' \
+           > /usr/bin/pdftk
+         chmod 755 /usr/bin/pdftk
+
+    - name: Adjust ImageMagick configuration
+      shell: bash
+      run: >
+        test -f /etc/ImageMagick-6/policy.xml &&
+        sed -i '/pattern="PDF"/s/rights="none"/rights="read\|write"/'
+        /etc/ImageMagick-6/policy.xml
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Test pdftools functionality
+      shell: bash
+      run: |
+        export PATH=${GITHUB_WORKSPACE}/bin:${PATH}
+        #bats tests/*bats
         make test
