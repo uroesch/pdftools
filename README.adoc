@@ -30,8 +30,8 @@ image:{base-url}/workflows/bash-compatibility/badge.svg[
   link="{base-url}/actions?query=workflow:bash-compatilbility"
 ]
 image:{base-url}/workflows/test-pdftools/badge.svg[
-  title="test-pdftools",
-  link="{base-url}/actions?query=workflow:test-pdftools"
+  title="os-compatibility",
+  link="{base-url}/actions?query=workflow:os-compatiblilty"
 ]
 image:{base-url}/workflows/create-docs/badge.svg[
   title="create-docs",
