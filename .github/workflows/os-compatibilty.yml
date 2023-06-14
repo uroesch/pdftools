@@ -30,6 +30,7 @@ jobs:
           - { name: ubuntu, release: 20.04 }
           - { name: ubuntu, release: 18.04 }
         # - { name: ubuntu, release: 16.04 }
+          - { name: debian, release: 12 }
           - { name: debian, release: 11 }
           - { name: debian, release: 10 }
         
