@@ -119,7 +119,11 @@ test-bash:
 			openjdk11-jre-headless \
 			poppler-utils \
 			sane-utils \
-			tesseract-ocr; \
+			tesseract-ocr \
+			tesseract-ocr-data-deu \
+			tesseract-ocr-data-eng \
+			tesseract-ocr-data-fra \
+			tesseract-ocr-data-ita; \
 			curl -sJLO 'https://gitlab.com/pdftk-java/pdftk/-/jobs/812582458/artifacts/raw/build/libs/pdftk-all.jar?inline=false' && \
 			mv pdftk-all.jar /usr/lib/ && \
 			echo -e "#!/usr/bin/env bash\njava -jar /usr/lib/pdftk-all.jar \"\$$@\"" > /usr/bin/pdftk && \
@@ -127,6 +131,7 @@ test-bash:
 	};
 	for version in $${VERSIONS[@]}; do
 		@echo "Test bash version $${version}"
+		docker pull bash:$${version}; \
 		docker run \
 			--rm \
 			--tty \

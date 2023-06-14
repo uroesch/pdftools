@@ -51,7 +51,11 @@ jobs:
           openjdk11-jre-headless \
           poppler-utils \
           sane-utils \
-          tesseract-ocr
+          tesseract-ocr \
+          tesseract-ocr-data-deu \
+          tesseract-ocr-data-eng \
+          tesseract-ocr-data-fra \
+          tesseract-ocr-data-ita
 
     - name: Install pdftk
       shell: bash
